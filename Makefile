@@ -71,7 +71,7 @@ check: b2xcc.c xcc.c
 	@if test $$? -ne 0; then echo "Failed"; else echo "OK"; fi
 
 # Deps
-libxcc.o: xcc.h
-bxcc.o: xcc.h
-b2xcc.o: xcc.h
-xcc.o: xcc.h
+libxcc.o: xccP.h xcc.h
+bxcc.o: xccP.h xcc.h
+b2xcc.o: xccP.h xcc.h
+xcc.o: xccP.h xcc.h

@@ -26,7 +26,7 @@
 #include <string.h>
 #include <expat.h>
 
-#include <xcc.h>
+#include "xccP.h"
 
 char *xcc_version_string(void)
 {

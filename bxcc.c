@@ -28,9 +28,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <expat.h>
 
-#include <xcc.h>
+#include "xccP.h"
 
 typedef struct _bParserData {
     char *cbuffer;
