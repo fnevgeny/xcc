@@ -522,7 +522,14 @@ int output_start_handler(const XCCStack *elements)
                 Attribute *a;
 
                 xcc_stack_get_data(e->attributes, j, (void **) &a);
-                printf("                if (!strcmp(aname, \"%s\")) {\n", a->name);
+
+                if (a->name[0] == '#') {
+                    printf("                if (!strcmp(aname, %s)) {\n",
+                        a->name + 1);
+                } else {
+                    printf("                if (!strcmp(aname, \"%s\")) {\n",
+                        a->name);
+                }
                 sprintf(abuf, "attribute.%s", a->atype->name);
                 buf1 = replace(a->atype->ccode, "$$", abuf);
                 buf2 = replace(buf1, "$?", "avalue");
