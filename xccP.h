@@ -30,6 +30,10 @@
 
 #define XCC_NS_SEPARATOR    '|'
 
+#define XSTACK_CHUNK_SIZE   16
+
+#define BUFFSIZE	    8192
+
 typedef struct _XCC {
     XCCStack *a_types;
     XCCStack *e_types;

@@ -83,8 +83,6 @@ static int xcc_strlen(const char *s)
     }
 }
 
-#define XSTACK_CHUNK_SIZE   16
-
 XCCStack *xcc_stack_new(XCC_stack_data_free data_free)
 {
     XCCStack *xs = xcc_malloc(sizeof(XCCStack));
@@ -856,8 +854,6 @@ int output_end_handler(const XCCStack *elements)
     
     return XCC_RETURN_SUCCESS;
 }
-
-#define BUFFSIZE	8192
 
 void *xcc_get_root(XCCParserData *pdata)
 {

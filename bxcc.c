@@ -232,8 +232,6 @@ static void char_data_handler(void *data, const XML_Char *s, int len)
     pdata->cbuflen = new_len;
 }
 
-#define BUFFSIZE	8192
-
 int main(void) {
     XML_Parser xp;
     bParserData pdata;
