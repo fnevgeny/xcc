@@ -241,12 +241,17 @@ int output_etype_union(const XCCStack *e_types, FILE *fp)
 static int get_element_id_by_name(const XCCStack *elements, const char *name)
 {
     int i, n_elements = xcc_stack_depth(elements);
+    
+    if (!name) {
+        return -1;
+    }
+    
     for (i = 0; i < n_elements; i++) {
         Element *e;
         void *p;
         xcc_stack_get_data(elements, i, &p);
         e = p;
-        if (!strcmp(e->name, name)) {
+        if (e && e->name && !strcmp(e->name, name)) {
             return e->id;
         }
     }
@@ -445,6 +450,11 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
         xcc_stack_get_data(elements, i, &p);
         e = p;
         element_id  = e->id;
+
+        if (!e->etype) {
+            xcc_error("couldn't find element type of %s", e->name);
+            return XCC_RETURN_FAILURE;
+        }
 
         sprintf(ebuf, "element.%s", e->etype->name);
         
