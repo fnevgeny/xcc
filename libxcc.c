@@ -673,6 +673,10 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
             buf1 = replace(a->atype->ccode, "$$", abuf);
             buf2 = replace(buf1, "$?", "avalue");
             xcc_free(buf1);
+            buf1 = replace(buf2, "$U", "pdata->udata");
+            xcc_free(buf2);
+            buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
+            xcc_free(buf1);
             printf("                    %s\n", buf2);
             xcc_free(buf2);
             buf1 = replace(a->ccode, "$$", ebuf);
