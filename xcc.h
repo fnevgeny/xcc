@@ -32,8 +32,8 @@
 
 #define XCC_VERSION_MAJOR   0
 #define XCC_VERSION_MINOR   3
-#define XCC_VERSION_NANO    2
-#define XCC_VERSION_STRING  "xcc-0.3.2"
+#define XCC_VERSION_NANO    3
+#define XCC_VERSION_STRING  "xcc-0.3.3"
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
