@@ -673,20 +673,25 @@ static void usage(const char *arg0, FILE *fp)
     fprintf(fp, "Available options:\n");
     fprintf(fp, "  -i <file>  input file [stdin]\n");
     fprintf(fp, "  -o <file>  output file [stdout]\n");
-    fprintf(fp, "  -h         print this help\n");
+    fprintf(fp, "  -V         display version info and exit\n");
+    fprintf(fp, "  -h         print this help and exit\n");
 }
 
 int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "i:o:h")) != -1) {
+    while ((opt = getopt(argc, argv, "i:o:Vh")) != -1) {
         switch (opt) {
         case 'i':
             xopts->ifile = optarg;
             break;
         case 'o':
             xopts->ofile = optarg;
+            break;
+        case 'V':
+            printf("%s\n", xcc_get_version_string());
+            exit(0);
             break;
         case 'h':
             usage(argv[0], stdout);
