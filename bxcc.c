@@ -39,15 +39,15 @@ typedef struct _bParserData {
     int cbufsize;
     int cbuflen;
     
-    XStack *a_types;
-    XStack *e_types;
-    XString *preamble;
-    XString *postamble;
-    XStack *elements;
+    XCCStack *a_types;
+    XCCStack *e_types;
+    XCCString *preamble;
+    XCCString *postamble;
+    XCCStack *elements;
 } bParserData;
 
 
-static void register_attribute_type(XStack *a_types, const char **attr)
+static void register_attribute_type(XCCStack *a_types, const char **attr)
 {
     int i;
     AType *atype;
@@ -62,10 +62,10 @@ static void register_attribute_type(XStack *a_types, const char **attr)
             atype->ctype = xstrdup(attr[i + 1]);
         }
     }
-    xstack_increment(a_types, atype);
+    xcc_stack_increment(a_types, atype);
 }
 
-static void register_element_type(XStack *e_types, const char **attr)
+static void register_element_type(XCCStack *e_types, const char **attr)
 {
     int i;
     EType *etype;
@@ -80,10 +80,10 @@ static void register_element_type(XStack *e_types, const char **attr)
             etype->ctype = xstrdup(attr[i + 1]);
         }
     }
-    xstack_increment(e_types, etype);
+    xcc_stack_increment(e_types, etype);
 }
 
-static void register_element(XStack *elements, XStack *e_types, const char **attr)
+static void register_element(XCCStack *elements, XCCStack *e_types, const char **attr)
 {
     int i;
     Element *e;
@@ -98,10 +98,10 @@ static void register_element(XStack *elements, XStack *e_types, const char **att
             e->etype = get_etype_by_name(e_types, attr[i + 1]);
         }
     }
-    xstack_increment(elements, e);
+    xcc_stack_increment(elements, e);
 }
 
-static void register_element_attribute(Element *e, XStack *a_types, const char **attr)
+static void register_element_attribute(Element *e, XCCStack *a_types, const char **attr)
 {
     int i;
     Attribute *a;
@@ -117,7 +117,7 @@ static void register_element_attribute(Element *e, XStack *a_types, const char *
         }
     }
 
-    xstack_increment(e->attributes, a);
+    xcc_stack_increment(e->attributes, a);
 }
 
 static void register_element_child(Element *e, const char **attr)
@@ -133,7 +133,7 @@ static void register_element_child(Element *e, const char **attr)
         }
     }
 
-    xstack_increment(e->children, c);
+    xcc_stack_increment(e->children, c);
 }
 
 static void start(void *data, const char *el, const char **attr) {
@@ -153,12 +153,12 @@ static void start(void *data, const char *el, const char **attr) {
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
-        xstack_get_last(pdata->elements, (void **) &e);
+        xcc_stack_get_last(pdata->elements, (void **) &e);
         register_element_attribute(e, pdata->a_types, attr);
     } else
     if (!strcmp(el, "child")) {
         Element *e;
-        xstack_get_last(pdata->elements, (void **) &e);
+        xcc_stack_get_last(pdata->elements, (void **) &e);
         register_element_child(e, attr);
     } else
     if (!strcmp(el, "data")) {
@@ -181,38 +181,38 @@ static void end(void *data, const char *el) {
     
     if (!strcmp(el, "attribute-type")) {
         AType *atype;
-        xstack_get_last(pdata->a_types, (void **) &atype);
+        xcc_stack_get_last(pdata->a_types, (void **) &atype);
         atype->ccode = xstrdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "element-type")) {
         EType *etype;
-        xstack_get_last(pdata->e_types, (void **) &etype);
+        xcc_stack_get_last(pdata->e_types, (void **) &etype);
         etype->ccode = xstrdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
         Attribute *a;
-        xstack_get_last(pdata->elements, (void **) &e);
-        xstack_get_last(e->attributes, (void **) &a);
+        xcc_stack_get_last(pdata->elements, (void **) &e);
+        xcc_stack_get_last(e->attributes, (void **) &a);
         a->ccode = xstrdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "child")) {
         Element *e;
         Child *c;
-        xstack_get_last(pdata->elements, (void **) &e);
-        xstack_get_last(e->children, (void **) &c);
+        xcc_stack_get_last(pdata->elements, (void **) &e);
+        xcc_stack_get_last(e->children, (void **) &c);
         c->ccode = xstrdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "data")) {
         Element *e;
-        xstack_get_last(pdata->elements, (void **) &e);
-        xstring_set(e->data, pdata->cbuffer);
+        xcc_stack_get_last(pdata->elements, (void **) &e);
+        xcc_string_set(e->data, pdata->cbuffer);
     } else
     if (!strcmp(el, "preamble")) {
-        xstring_set(pdata->preamble, pdata->cbuffer);
+        xcc_string_set(pdata->preamble, pdata->cbuffer);
     } else
     if (!strcmp(el, "postamble")) {
-        xstring_set(pdata->postamble, pdata->cbuffer);
+        xcc_string_set(pdata->postamble, pdata->cbuffer);
     }
     
     pdata->cbuflen = 0;
@@ -226,7 +226,7 @@ static void char_data_handler(void *data, const XML_Char *s, int len)
     new_len = pdata->cbuflen + len;
     
     if (new_len >= pdata->cbufsize) {
-        pdata->cbuffer = xrealloc(pdata->cbuffer, (new_len + 1));
+        pdata->cbuffer = xcc_realloc(pdata->cbuffer, (new_len + 1));
         pdata->cbufsize = new_len + 1;
     }
     
@@ -253,11 +253,11 @@ int main(void) {
     pdata.cbufsize = 0;
     pdata.cbuflen  = 0;
  
-    pdata.a_types   = xstack_new();
-    pdata.e_types   = xstack_new();
-    pdata.preamble  = xstring_new();
-    pdata.postamble = xstring_new();
-    pdata.elements  = xstack_new();
+    pdata.a_types   = xcc_stack_new();
+    pdata.e_types   = xcc_stack_new();
+    pdata.preamble  = xcc_string_new();
+    pdata.postamble = xcc_string_new();
+    pdata.elements  = xcc_stack_new();
     
     XML_SetUserData(xp, (void *) &pdata);
 

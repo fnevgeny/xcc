@@ -17,8 +17,8 @@
     <element-type name="xcc" ctype="XCC *">
         $$ = xcc_new();
     </element-type>
-    <element-type name="string" ctype="XString *">
-        $$ = xstring_new();
+    <element-type name="string" ctype="XCCString *">
+        $$ = xcc_string_new();
     </element-type>
     <element-type name="atype" ctype="AType *">
         $$ = atype_new();
@@ -43,13 +43,13 @@
             $$->preamble = $?;
         </child>
         <child type="attribute-type">
-            xstack_increment($$->a_types, $?);
+            xcc_stack_increment($$->a_types, $?);
         </child>
         <child type="element-type">
-            xstack_increment($$->e_types, $?);
+            xcc_stack_increment($$->e_types, $?);
         </child>
         <child type="element">
-            xstack_increment($$->elements, $?);
+            xcc_stack_increment($$->elements, $?);
         </child>
         <child type="postamble">
             $$->postamble = $?;
@@ -58,7 +58,7 @@
     <element name="preamble" type="string">
         <!-- Character data -->
         <data>
-            xstring_set($$, $?);
+            xcc_string_set($$, $?);
         </data>
     </element>
     <element name="attribute-type" type="atype">
@@ -99,10 +99,10 @@
         </attribute>
         <!-- Child elements -->
         <child type="attribute">
-            xstack_increment($$->attributes, $?);
+            xcc_stack_increment($$->attributes, $?);
         </child>
         <child type="child">
-            xstack_increment($$->children, $?);
+            xcc_stack_increment($$->children, $?);
         </child>
         <child type="data">
             $$->data = $?;
@@ -111,7 +111,7 @@
     <element name="postamble" type="string">
         <!-- Character data -->
         <data>
-            xstring_set($$, $?);
+            xcc_string_set($$, $?);
         </data>
     </element>
     <element name="attribute" type="attribute">
@@ -142,7 +142,7 @@
     <element name="data" type="string">
         <!-- Character data -->
         <data>
-            xstring_set($$, $?);
+            xcc_string_set($$, $?);
         </data>
     </element>
 
