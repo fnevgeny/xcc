@@ -716,7 +716,7 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
     }
     if (!xopts->ofp) {
         fprintf(stderr, "Can't open output stream\n");
-        exit(1);
+        return XCC_RETURN_FAILURE;
     }
     
     return XCC_RETURN_SUCCESS;

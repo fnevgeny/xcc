@@ -232,7 +232,9 @@ XCCNode *xcc_node_new(void)
 {
     XCCNode *n;
     n = xcc_malloc(sizeof(XCCNode));
-    memset(n, 0, sizeof(XCCNode));
+    if (n) {
+        memset(n, 0, sizeof(XCCNode));
+    }
     return n;
 }
 
