@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000,2001 Evgeny Stambulchik
+ * Copyright (c) 2000-2002 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <expat.h>
 
-#define XCC_VERSION_STRING  "xcc-0.0.2"
+#define XCC_VERSION_STRING  "xcc-0.0.3"
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
