@@ -1,5 +1,22 @@
 XCC - XML Compiler-Compiler
 
-Copyright (c) 2000-2004 Evgeny Stambulchik
+Copyright (c) 2000-2005 Evgeny Stambulchik
 
-To be written...
+XCC is a tool for building XML format parsers. One way to describe what XCC
+does is by analogy with a generic parser generator, e.g. yacc or bison. Yacc
+needs a lexical analyzer to function properly, and that lexical analyzer is
+usually built with (f)lex. In the XML world, there are a few packages which
+fill in the role of lex (expat and libxml are the most known), but the
+high-level grammar parsing is usually done by a hand-written code; writing
+such a parser is a tedious and error-prone task.
+
+XCC was created to help developers in writing reliable easy-to-understood
+parsers for handling complex XML-based grammars.
+
+The grammar is described in an XML dialect as well; it resembles the XML Schema
+with some notations inspired by yacc.
+
+Since version 0.0.1, XCC has been self-hosting. Therefore, given the present
+lack of documentation, its sources may be used to learn the grammar. However,
+if the recursive nature of it causes you light dizziness (it does for me ;-)),
+you're advised to explore the "examples" dir instead.
