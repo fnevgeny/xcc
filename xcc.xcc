@@ -39,19 +39,19 @@
     <!-- Elements -->
     <element name="parser" type="xcc">
         <!-- Child elements -->
-        <child type="preamble">
+        <child name="preamble">
             $$->preamble = $?;
         </child>
-        <child type="attribute-type">
+        <child name="attribute-type">
             xcc_stack_increment($$->a_types, $?);
         </child>
-        <child type="element-type">
+        <child name="element-type">
             xcc_stack_increment($$->e_types, $?);
         </child>
-        <child type="element">
+        <child name="element">
             xcc_stack_increment($$->elements, $?);
         </child>
-        <child type="postamble">
+        <child name="postamble">
             $$->postamble = $?;
         </child>
     </element>
@@ -98,13 +98,13 @@
             free($?);
         </attribute>
         <!-- Child elements -->
-        <child type="attribute">
+        <child name="attribute">
             xcc_stack_increment($$->attributes, $?);
         </child>
-        <child type="child">
+        <child name="child">
             xcc_stack_increment($$->children, $?);
         </child>
-        <child type="data">
+        <child name="data">
             $$->data = $?;
         </child>
     </element>
@@ -131,8 +131,8 @@
     </element>
     <element name="child" type="child">
         <!-- Attributes -->
-        <attribute name="type" type="sval">
-            $$->type = $?;
+        <attribute name="name" type="sval">
+            $$->name = $?;
         </attribute>
         <!-- Character data -->
         <data>

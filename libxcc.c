@@ -487,7 +487,7 @@ int output_start_handler(const XCCStack *elements)
             Child *c;
             int element_id;
             xcc_stack_get_data(e->children, j, (void **) &c);
-            element_id = get_element_id_by_name(elements, c->type);
+            element_id = get_element_id_by_name(elements, c->name);
             printf("    case %d:\n", n_elements*parent_id + element_id);
         }
     }
@@ -667,7 +667,7 @@ int output_end_handler(const XCCStack *elements)
             Child *c;
             Element *ce;
             xcc_stack_get_data(e->children, j, (void **) &c);
-            ce = get_element_by_name(elements, c->type);
+            ce = get_element_by_name(elements, c->name);
             sprintf(ebuf, "element.%s", ce->etype->name);
             printf("    case %d:\n", n_elements*parent_id + ce->id);
             printf("        {\n");

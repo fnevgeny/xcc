@@ -113,7 +113,7 @@ typedef struct _Attribute {
 } Attribute;
 
 typedef struct _Child {
-    char *type;
+    char *name;
     char *ccode;
 } Child;
 

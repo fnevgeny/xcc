@@ -128,8 +128,8 @@ static void register_element_child(Element *e, const char **attr)
     c = child_new();
     
     for (i = 0; attr[i]; i += 2) {
-        if (!strcmp(attr[i], "type")) {
-            c->type = xstrdup(attr[i + 1]);
+        if (!strcmp(attr[i], "name")) {
+            c->name = xstrdup(attr[i + 1]);
         }
     }
 
