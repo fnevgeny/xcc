@@ -135,6 +135,7 @@ static void register_element_child(Element *e, const char **attr)
 
 static void start(void *data, const char *el, const char **attr) {
     bParserData *pdata = (bParserData *) data;
+    void *p;
 
     if (!strcmp(el, "parser")) {
         ;
@@ -150,12 +151,14 @@ static void start(void *data, const char *el, const char **attr) {
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
-        xcc_stack_get_last(pdata->elements, (void **) &e);
+        xcc_stack_get_last(pdata->elements, &p);
+        e = p;
         register_element_attribute(e, pdata->a_types, attr);
     } else
     if (!strcmp(el, "child")) {
         Element *e;
-        xcc_stack_get_last(pdata->elements, (void **) &e);
+        xcc_stack_get_last(pdata->elements, &p);
+        e = p;
         register_element_child(e, attr);
     } else
     if (!strcmp(el, "data")) {
@@ -175,34 +178,42 @@ static void start(void *data, const char *el, const char **attr) {
 
 static void end(void *data, const char *el) {
     bParserData *pdata = (bParserData *) data;
+    void *p;
     
     if (!strcmp(el, "attribute-type")) {
         AType *atype;
-        xcc_stack_get_last(pdata->a_types, (void **) &atype);
+        xcc_stack_get_last(pdata->a_types, &p);
+        atype = p;
         atype->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "element-type")) {
         EType *etype;
-        xcc_stack_get_last(pdata->e_types, (void **) &etype);
+        xcc_stack_get_last(pdata->e_types, &p);
+        etype = p;
         etype->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
         Attribute *a;
-        xcc_stack_get_last(pdata->elements, (void **) &e);
-        xcc_stack_get_last(e->attributes, (void **) &a);
+        xcc_stack_get_last(pdata->elements, &p);
+        e = p;
+        xcc_stack_get_last(e->attributes, &p);
+        a = p;
         a->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "child")) {
         Element *e;
         Child *c;
-        xcc_stack_get_last(pdata->elements, (void **) &e);
-        xcc_stack_get_last(e->children, (void **) &c);
+        xcc_stack_get_last(pdata->elements, &p);
+        e = p;
+        xcc_stack_get_last(e->children, &p);
+        c = p;
         c->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "data")) {
         Element *e;
-        xcc_stack_get_last(pdata->elements, (void **) &e);
+        xcc_stack_get_last(pdata->elements, &p);
+        e = p;
         xcc_string_set(e->data, pdata->cbuffer);
     } else
     if (!strcmp(el, "preamble")) {

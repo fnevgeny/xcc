@@ -156,12 +156,15 @@
 int main(void)
 {
     XCC *xcc;
+    void *p;
 
-    if (xcc_parse(stdin, NULL, (void **) &xcc,
-        xcc_start_handler, xcc_end_handler) != XCC_RETURN_SUCCESS) {
+    if (xcc_parse(stdin, NULL, &p, xcc_start_handler, xcc_end_handler)
+        != XCC_RETURN_SUCCESS) {
         xcc_error("Failed parsing input");
         exit(1);
     }
+    
+    xcc = p;
 
     output_header();
     

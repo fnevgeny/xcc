@@ -367,7 +367,9 @@ AType *get_atype_by_name(XCCStack *a_types, const char *name)
     int i, n_atypes = xcc_stack_depth(a_types);
     for (i = 0; i < n_atypes; i++) {
         AType *atype;
-        xcc_stack_get_data(a_types, i, (void **) &atype);
+        void *p;
+        xcc_stack_get_data(a_types, i, &p);
+        atype = p;
         if (!strcmp(atype->name, name)) {
             return atype;
         }
@@ -381,7 +383,9 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name)
     int i, n_etypes = xcc_stack_depth(e_types);
     for (i = 0; i < n_etypes; i++) {
         EType *etype;
-        xcc_stack_get_data(e_types, i, (void **) &etype);
+        void *p;
+        xcc_stack_get_data(e_types, i, &p);
+        etype = p;
         if (!strcmp(etype->name, name)) {
             return etype;
         }
@@ -421,7 +425,9 @@ int output_atype_union(const XCCStack *a_types)
     printf("typedef union {\n");
     for (i = 0; i < n_atypes; i++) {
         AType *atype;
-        xcc_stack_get_data(a_types, i, (void **) &atype);
+        void *p;
+        xcc_stack_get_data(a_types, i, &p);
+        atype = p;
         printf("    %s %s;\n", atype->ctype, atype->name);
     }
     printf("} XCCAType;\n\n");
@@ -437,7 +443,9 @@ int output_etype_union(const XCCStack *e_types)
     printf("typedef union {\n");
     for (i = 0; i < n_etypes; i++) {
         EType *etype;
-        xcc_stack_get_data(e_types, i, (void **) &etype);
+        void *p;
+        xcc_stack_get_data(e_types, i, &p);
+        etype = p;
         printf("    %s %s;\n", etype->ctype, etype->name);
     }
     printf("    void * unicast;\n");
@@ -451,7 +459,9 @@ static int get_element_id_by_name(const XCCStack *elements, const char *name)
     int i, n_elements = xcc_stack_depth(elements);
     for (i = 0; i < n_elements; i++) {
         Element *e;
-        xcc_stack_get_data(elements, i, (void **) &e);
+        void *p;
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
         if (!strcmp(e->name, name)) {
             return e->id;
         }
@@ -553,7 +563,9 @@ int output_element_tab(const XCCStack *elements)
     for (i = 0; i < n_elements; i++) {
         Element *e;
         char *pname;
-        xcc_stack_get_data(elements, i, (void **) &e);
+        void *p;
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
         e->id = i + 1;
         pname = print_sharp_name(e->name);
         printf("    {%d, %s}%s\n", e->id, pname, i == n_elements - 1 ? "":",");
@@ -605,7 +617,9 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
     printf("        parent_id = 0;\n");
     printf("    } else {\n");
-    printf("        xcc_stack_get_last(pdata->nodes, (void **) &pnode);\n");
+    printf("        void *p;\n");
+    printf("        xcc_stack_get_last(pdata->nodes, &p);\n");
+    printf("        pnode = p;\n");
     printf("        parent_id = pnode->id;\n");
     printf("    }\n");
     printf("    if (parent_id < 0) {\n");
@@ -627,15 +641,18 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     
     for (i = 0; i < n_elements; i++) {
         Element *e;
+        void *p;
         int j, n_children, parent_id;
         
-        xcc_stack_get_data(elements, i, (void **) &e);
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
         parent_id  = e->id;
         n_children = xcc_stack_depth(e->children);
         for (j = 0; j < n_children; j++) {
             Child *c;
             int element_id;
-            xcc_stack_get_data(e->children, j, (void **) &c);
+            xcc_stack_get_data(e->children, j, &p);
+            c = p;
             element_id = get_element_id_by_name(elements, c->name);
             printf("    case %d:\n", n_elements*parent_id + element_id);
         }
@@ -653,10 +670,12 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("    switch (element_id) {\n");
     for (i = 0; i < n_elements; i++) {
         Element *e;
+        void *p;
         int j, n_attributes, element_id;
         char ebuf[128], abuf[128];
         
-        xcc_stack_get_data(elements, i, (void **) &e);
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
         element_id  = e->id;
 
         sprintf(ebuf, "element.%s", e->etype->name);
@@ -679,7 +698,8 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
             Attribute *a;
             char *pname;
 
-            xcc_stack_get_data(e->attributes, j, (void **) &a);
+            xcc_stack_get_data(e->attributes, j, &p);
+            a = p;
 
             pname = print_sharp_name(a->name);
             printf("                if (!strcmp(aname, %s)) {\n", pname);
@@ -744,7 +764,9 @@ static Element *get_element_by_name(const XCCStack *elements, const char *name)
     int i, n_elements = xcc_stack_depth(elements);
     for (i = 0; i < n_elements; i++) {
         Element *e;
-        xcc_stack_get_data(elements, i, (void **) &e);
+        void *p;
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
         if (!strcmp(e->name, name)) {
             return e;
         }
@@ -765,6 +787,7 @@ int output_end_handler(const XCCStack *elements)
     printf("{\n");
     printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
     printf("    XCCNode *node, *pnode;\n");
+    printf("    void *p;\n");
     printf("    int element_id, parent_id, parent_child, skip = 0;\n");
 
     printf("    XCCEType element, pelement;\n");
@@ -772,16 +795,19 @@ int output_end_handler(const XCCStack *elements)
     printf("    if (pdata->error) {\n");
     printf("        return;\n");
     printf("    }\n\n");
-    printf("    xcc_stack_get_last(pdata->nodes, (void **) &node);\n");
+    printf("    xcc_stack_get_last(pdata->nodes, &p);\n");
+    printf("    node = p;\n");
     printf("    element_id = node->id;\n");
     printf("    element.unicast = node->data;\n");
 
     printf("    switch (element_id) {\n");
     for (i = 0; i < n_elements; i++) {
         Element *e;
+        void *p;
         int element_id;
 
-        xcc_stack_get_data(elements, i, (void **) &e);
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
         if (e->data->s != NULL) {
             sprintf(ebuf, "element.%s", e->etype->name);
             element_id  = e->id;
@@ -806,7 +832,8 @@ int output_end_handler(const XCCStack *elements)
     printf("        parent_id  = 0;\n");
     printf("        pelement.unicast = NULL;\n");
     printf("    } else {\n");
-    printf("        xcc_stack_get_last(pdata->nodes, (void **) &pnode);\n");
+    printf("        xcc_stack_get_last(pdata->nodes, &p);\n");
+    printf("        pnode = p;\n");
     printf("        parent_id  = pnode->id;\n");
     printf("        pelement.unicast = pnode->data;\n");
     printf("    }\n");
@@ -823,16 +850,19 @@ int output_end_handler(const XCCStack *elements)
     
     for (i = 0; i < n_elements; i++) {
         Element *e;
+        void *p;
         int j, n_children, parent_id;
         
-        xcc_stack_get_data(elements, i, (void **) &e);
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
         parent_id  = e->id;
         n_children = xcc_stack_depth(e->children);
         sprintf(pbuf, "pelement.%s", e->etype->name);
         for (j = 0; j < n_children; j++) {
             Child *c;
             Element *ce;
-            xcc_stack_get_data(e->children, j, (void **) &c);
+            xcc_stack_get_data(e->children, j, &p);
+            c = p;
             ce = get_element_by_name(elements, c->name);
             sprintf(ebuf, "element.%s", ce->etype->name);
             printf("    case %d:\n", n_elements*parent_id + ce->id);
@@ -870,10 +900,11 @@ int output_end_handler(const XCCStack *elements)
 
 void *xcc_get_root(XCCParserData *pdata)
 {
-    XCCNode *node;
-    if (xcc_stack_get_data(pdata->nodes, 0, (void **) &node) != XCC_RETURN_SUCCESS) {
+    void *p;
+    if (xcc_stack_get_data(pdata->nodes, 0, &p) != XCC_RETURN_SUCCESS) {
         return NULL;
     } else {
+        XCCNode *node = p;
         return node->data;
     }
 }
