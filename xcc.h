@@ -31,9 +31,9 @@
 #include <expat.h>
 
 #define XCC_VERSION_MAJOR   0
-#define XCC_VERSION_MINOR   1
+#define XCC_VERSION_MINOR   2
 #define XCC_VERSION_NANO    0
-#define XCC_VERSION_STRING  "xcc-0.1.0"
+#define XCC_VERSION_STRING  "xcc-0.2.0"
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
