@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<parser>
+    <!-- Preamble -->
+    <preamble><![CDATA[
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <xcc.h>
+    ]]></preamble>
+    
+    <!-- Attribute types -->
+    <attribute-type name="sval" ctype="char *">
+        $$ = xstrdup($?);
+    </attribute-type>
+
+    <!-- Element types -->
+    <element-type name="xcc" ctype="XCC *">
+        $$ = xcc_new();
+    </element-type>
+    <element-type name="string" ctype="XString *">
+        $$ = xstring_new();
+    </element-type>
+    <element-type name="atype" ctype="AType *">
+        $$ = atype_new();
+    </element-type>
+    <element-type name="etype" ctype="EType *">
+        $$ = etype_new();
+    </element-type>
+    <element-type name="element" ctype="Element *">
+        $$ = element_new();
+    </element-type>
+    <element-type name="attribute" ctype="Attribute *">
+        $$ = attribute_new();
+    </element-type>
+    <element-type name="child" ctype="Child *">
+        $$ = child_new();
+    </element-type>
+
+    <!-- Elements -->
+    <element name="parser" type="xcc">
+        <!-- Child elements -->
+        <child type="preamble">
+            $$->preamble = $?;
+        </child>
+        <child type="attribute-type">
+            xstack_increment($$->a_types, $?);
+        </child>
+        <child type="element-type">
+            xstack_increment($$->e_types, $?);
+        </child>
+        <child type="element">
+            xstack_increment($$->elements, $?);
+        </child>
+        <child type="postamble">
+            $$->postamble = $?;
+        </child>
+    </element>
+    <element name="preamble" type="string">
+        <!-- Character data -->
+        <data>
+            xstring_set($$, $?);
+        </data>
+    </element>
+    <element name="attribute-type" type="atype">
+        <!-- Attributes -->
+        <attribute name="name" type="sval">
+            $$->name = $?;
+        </attribute>
+        <attribute name="ctype" type="sval">
+            $$->ctype = $?;
+        </attribute>
+        <!-- Character data -->
+        <data>
+            $$->ccode = xstrdup($?);
+        </data>
+    </element>
+    <element name="element-type" type="etype">
+        <!-- Attributes -->
+        <attribute name="name" type="sval">
+            $$->name = $?;
+        </attribute>
+        <attribute name="ctype" type="sval">
+            $$->ctype = $?;
+        </attribute>
+        <!-- Character data -->
+        <data>
+            $$->ccode = xstrdup($?);
+        </data>
+    </element>
+    <element name="element" type="element">
+        <!-- Attributes -->
+        <attribute name="name" type="sval">
+            $$->name = $?;
+        </attribute>
+        <attribute name="type" type="sval">
+            XCC *xcc = (XCC *) $0;
+            $$->etype = get_etype_by_name(xcc->e_types, $?);
+            free($?);
+        </attribute>
+        <!-- Child elements -->
+        <child type="attribute">
+            xstack_increment($$->attributes, $?);
+        </child>
+        <child type="child">
+            xstack_increment($$->children, $?);
+        </child>
+        <child type="data">
+            $$->data = $?;
+        </child>
+    </element>
+    <element name="postamble" type="string">
+        <!-- Character data -->
+        <data>
+            xstring_set($$, $?);
+        </data>
+    </element>
+    <element name="attribute" type="attribute">
+        <!-- Attributes -->
+        <attribute name="name" type="sval">
+            $$->name = $?;
+        </attribute>
+        <attribute name="type" type="sval">
+            XCC *xcc = (XCC *) $0;
+            $$->atype = get_atype_by_name(xcc->a_types, $?);
+            free($?);
+        </attribute>
+        <!-- Character data -->
+        <data>
+            $$->ccode = xstrdup($?);
+        </data>
+    </element>
+    <element name="child" type="child">
+        <!-- Attributes -->
+        <attribute name="type" type="sval">
+            $$->type = $?;
+        </attribute>
+        <!-- Character data -->
+        <data>
+            $$->ccode = xstrdup($?);
+        </data>
+    </element>
+    <element name="data" type="string">
+        <!-- Character data -->
+        <data>
+            xstring_set($$, $?);
+        </data>
+    </element>
+
+    <!-- Postamble -->
+    <postamble><![CDATA[
+int main(void)
+{
+    XCC *xcc;
+
+    xcc_parse(stdin, NULL, (void **) &xcc, xcc_start_handler, xcc_end_handler);
+
+    output_preamble(xcc->preamble);
+
+    output_atype_union(xcc->a_types);
+    output_etype_union(xcc->e_types);
+
+    /* sort elements */
+    output_element_tab(xcc->elements);
+
+    output_start_handler(xcc->elements);
+    
+    output_end_handler(xcc->elements);
+
+    output_postamble(xcc->postamble);
+
+    exit(0);
+}
+    ]]></postamble>
+</parser>
