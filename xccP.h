@@ -117,8 +117,6 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 XCC *xcc_xcc_new(void);
 void xcc_xcc_free(XCC *xcc);
 
-void xcc_char_data_handler(void *data, const char *s, int len);
-
 int output_header(void);
 int output_preamble(const XCCString *pre);
 int output_postamble(const XCCString *post);

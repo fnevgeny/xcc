@@ -25,9 +25,9 @@ BPROG  = bxcc
 B2PROG = b2xcc
 PROG   = xcc
 
-BOBJS  = bxcc.o
-B2OBJS = b2xcc.o
-OBJS   = xcc.o
+BOBJS  = bxcc.o libexe.o
+B2OBJS = b2xcc.o libexe.o
+OBJS   = xcc.o libexe.o
 
 LOBJS  = libxcc.o
 
@@ -72,6 +72,7 @@ check: b2xcc.c xcc.c
 
 # Deps
 libxcc.o: xccP.h xcc.h
+libexe.o: xccP.h xcc.h
 bxcc.o: xccP.h xcc.h
 b2xcc.o: xccP.h xcc.h
 xcc.o: xccP.h xcc.h
