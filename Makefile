@@ -1,23 +1,9 @@
-# Begin config
+# Top-level directory
+TOP = .
 
-CC = gcc
-CPPFLAGS = -I.
-CFLAGS = -g -ansi -pedantic -Wall -W -Wno-unused-parameter -Wpointer-arith
-LDFLAGS =
+include $(TOP)/Make.conf
 
-AR = ar cru
-
-MKINSTALLDIRS = mkdir -p
-INSTALL_PROGRAM = install -c
-INSTALL_DATA = install -c -m 644
-
-bindir = /usr/local/bin
-libdir = /usr/local/lib
-incdir = /usr/local/include
-
-LIBS = -lexpat
-
-# End config
+LIBS = $(EXPAT_LIB)
 
 XCC_XCC = xcc.xcc
 
