@@ -27,6 +27,7 @@
 #define __XCC_H_
 
 #include <stdio.h>
+#include <string.h>
 #include <expat.h>
 
 #define XCC_VERSION_MAJOR   0

@@ -21,7 +21,6 @@
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 

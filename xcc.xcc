@@ -2,9 +2,6 @@
 <parser>
     <!-- Preamble -->
     <preamble><![CDATA[
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "xccP.h"
     ]]></preamble>
     
