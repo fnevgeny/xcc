@@ -29,6 +29,7 @@
 #include <getopt.h>
 
 #include "xccP.h"
+#include "bundle.i"
 
 XCC *xcc_xcc_new(void)
 {
@@ -673,6 +674,7 @@ static void usage(const char *arg0, FILE *fp)
     fprintf(fp, "Available options:\n");
     fprintf(fp, "  -i <file>  input file [stdin]\n");
     fprintf(fp, "  -o <file>  output file [stdout]\n");
+    fprintf(fp, "  -b         bundle auxiliary stuff into parser\n");
     fprintf(fp, "  -V         display version info and exit\n");
     fprintf(fp, "  -h         print this help and exit\n");
 }
@@ -681,13 +683,16 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "i:o:Vh")) != -1) {
+    while ((opt = getopt(argc, argv, "i:o:bVh")) != -1) {
         switch (opt) {
         case 'i':
             xopts->ifile = optarg;
             break;
         case 'o':
             xopts->ofile = optarg;
+            break;
+        case 'b':
+            xopts->bundle = 1;
             break;
         case 'V':
             printf("%s\n", xcc_get_version_string());
@@ -722,6 +727,18 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
     if (!xopts->ofp) {
         fprintf(stderr, "Can't open output stream\n");
         return XCC_RETURN_FAILURE;
+    }
+    
+    return XCC_RETURN_SUCCESS;
+}
+
+int output_bundle(FILE *fp)
+{
+    int i = 0;
+    char *s;
+    while ((s = bundle_str[i])) {
+        fprintf(fp, "%s\n", s);
+        i++;
     }
     
     return XCC_RETURN_SUCCESS;

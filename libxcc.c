@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "xccP.h"
+#include "xcc.h"
 
 void xcc_get_version_numbers(int *major, int *minor, int *nano)
 {
@@ -129,7 +129,7 @@ void xcc_stack_free(XCCStack *xs)
 int xcc_stack_increment(XCCStack *xs, const void *data)
 {
     if (xs->size <= xs->depth) {
-        unsigned int new_size = xs->size + XSTACK_CHUNK_SIZE;
+        unsigned int new_size = xs->size + XCC_STACK_CHUNK_SIZE;
         void **p = xcc_realloc(xs->entries, new_size*sizeof(void *));
         if (!p) {
             return XCC_RETURN_FAILURE;
@@ -300,7 +300,7 @@ int xcc_parse(FILE *fp, void *udata, void **root,
 {
     XML_Parser xp;
     XCCParserData pdata;
-    char Buff[BUFFSIZE];
+    char Buff[XCC_BUFFSIZE];
     
     xp = XML_ParserCreateNS(NULL, XCC_NS_SEPARATOR);
     if (!xp) {
@@ -332,7 +332,7 @@ int xcc_parse(FILE *fp, void *udata, void **root,
         int done;
         int len;
 
-        len = fread(Buff, 1, BUFFSIZE, fp);
+        len = fread(Buff, 1, XCC_BUFFSIZE, fp);
         if (ferror(fp)) {
             xcc_error("Read error");
             pdata.error = 1;

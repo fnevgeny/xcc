@@ -31,16 +31,31 @@
 #include <expat.h>
 
 #define XCC_VERSION_MAJOR   0
-#define XCC_VERSION_MINOR   2
-#define XCC_VERSION_NANO    1
-#define XCC_VERSION_STRING  "xcc-0.2.1"
+#define XCC_VERSION_MINOR   3
+#define XCC_VERSION_NANO    0
+#define XCC_VERSION_STRING  "xcc-0.3.0"
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
 
+#define XCC_NS_SEPARATOR    '|'
+
+#define XCC_STACK_CHUNK_SIZE  16
+
+#define XCC_BUFFSIZE	    8192
+
 /* ------------------- */
 
-typedef struct _XCCStack XCCStack;
+#define xcc_realloc realloc
+
+typedef void (*XCC_stack_data_free)(void *data); 
+
+typedef struct _XCCStack {
+    unsigned int size;
+    unsigned int depth;
+    void **entries;
+    XCC_stack_data_free data_free;
+} XCCStack;
 
 typedef struct _XCCString {
     unsigned int length;

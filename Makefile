@@ -27,6 +27,8 @@ LOBJS  = libxcc.o
 
 XCCLIB = libxcc.a	
 
+BUNDLE_I = bundle.i 
+
 all: $(PROG)
 
 $(XCCLIB): $(LOBJS)
@@ -44,10 +46,13 @@ b2xcc.c: $(XCC_XCC) $(BPROG)
 xcc.c:  $(XCC_XCC) $(B2PROG)
 	./$(B2PROG) -i $(XCC_XCC) -o $@
 
+$(BUNDLE_I): xcc.h libxcc.c
+	./c2cstr.sh xcc.h libxcc.c > $@
+
 clean:
 	rm -f $(BPROG) $(B2PROG) $(PROG) \
 	$(BOBJS) $(B2OBJS) $(OBJS) $(LOBJS) $(XCCLIB) \
-	xcc.c b2xcc.c
+	xcc.c b2xcc.c $(BUNDLE_I) tags
 
 install: $(XCCLIB) $(PROG)
 	$(MKINSTALLDIRS) $(bindir)
@@ -67,7 +72,7 @@ tags: bxcc.c xcc.h xccP.h libexe.c libxcc.c
 
 # Deps
 libxcc.o: xccP.h xcc.h
-libexe.o: xccP.h xcc.h
+libexe.o: xccP.h xcc.h $(BUNDLE_I)
 bxcc.o: xccP.h xcc.h
 b2xcc.o: xccP.h xcc.h
 xcc.o: xccP.h xcc.h

@@ -170,7 +170,11 @@ int main(int argc, char * const argv[])
     
     xcc = p;
     
-    output_header(xopts.ofp);
+    if (xopts.bundle) {
+        output_bundle(xopts.ofp);
+    } else {
+        output_header(xopts.ofp);
+    }
     
     output_preamble(xcc->preamble, xopts.ofp);
 

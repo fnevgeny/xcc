@@ -28,12 +28,6 @@
 
 #include "xcc.h"
 
-#define XCC_NS_SEPARATOR    '|'
-
-#define XSTACK_CHUNK_SIZE   16
-
-#define BUFFSIZE	    8192
-
 typedef struct _XCC {
     XCCStack *a_types;
     XCCStack *e_types;
@@ -48,16 +42,9 @@ typedef struct {
     char *ofile;
     FILE *ifp;
     FILE *ofp;
+    int  bundle;
 } XCCOpts;
 
-typedef void (*XCC_stack_data_free)(void *data); 
-
-struct _XCCStack {
-    unsigned int size;
-    unsigned int depth;
-    void **entries;
-    XCC_stack_data_free data_free;
-};
 
 typedef struct _AType {
     char *name;
@@ -92,7 +79,6 @@ typedef struct _Child {
 } Child;
 
 void *xcc_malloc(size_t size);
-#define xcc_realloc realloc
 
 char *xcc_strdup(const char *s);
 
@@ -125,6 +111,7 @@ XCC *xcc_xcc_new(void);
 void xcc_xcc_free(XCC *xcc);
 
 int output_header(FILE *fp);
+int output_bundle(FILE *fp);
 int output_preamble(const XCCString *pre, FILE *fp);
 int output_postamble(const XCCString *post, FILE *fp);
 int output_atype_union(const XCCStack *a_types, FILE *fp);

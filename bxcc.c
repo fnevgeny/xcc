@@ -246,7 +246,7 @@ static void char_data_handler(void *data, const XML_Char *s, int len)
 int main(int argc, char * const argv[]) {
     XML_Parser xp;
     bParserData pdata;
-    char Buff[BUFFSIZE];
+    char Buff[XCC_BUFFSIZE];
     XCCOpts xopts;
     
     xp = XML_ParserCreate(NULL);
@@ -283,7 +283,7 @@ int main(int argc, char * const argv[]) {
         int done;
         int len;
 
-        len = fread(Buff, 1, BUFFSIZE, xopts.ifp);
+        len = fread(Buff, 1, XCC_BUFFSIZE, xopts.ifp);
         if (ferror(xopts.ifp)) {
             fprintf(stderr, "Read error\n");
             exit(1);
