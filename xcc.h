@@ -147,6 +147,7 @@ typedef struct _XCCParserData {
     void *udata;
 } XCCParserData;
 
+int output_header(void);
 int output_preamble(const XCCString *pre);
 int output_postamble(const XCCString *post);
 int output_atype_union(const XCCStack *a_types);

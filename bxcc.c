@@ -290,6 +290,8 @@ int main(void) {
         }
     }
     
+    output_header();
+    
     output_preamble(pdata.preamble);
     
     output_atype_union(pdata.a_types);

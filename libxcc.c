@@ -304,7 +304,12 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name)
     return NULL;
 }
 
-
+int output_header(void)
+{
+    printf("/* Produced by %s */\n\n", xcc_version_string());
+    printf("#include <xcc.h>\n");
+    return XCC_RETURN_SUCCESS;
+}
 
 int output_preamble(const XCCString *pre)
 {

@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xcc.h>
     ]]></preamble>
     
     <!-- Attribute types -->
@@ -154,6 +153,8 @@ int main(void)
 
     xcc_parse(stdin, NULL, (void **) &xcc, xcc_start_handler, xcc_end_handler);
 
+    output_header();
+    
     output_preamble(xcc->preamble);
 
     output_atype_union(xcc->a_types);
