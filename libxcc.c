@@ -89,7 +89,7 @@ char *xcc_strdup(const char *s)
     return ret;
 }
 
-static int xcc_strlen(const char *s)
+static unsigned int xcc_strlen(const char *s)
 {
     if (s) {
         return strlen(s);
@@ -132,7 +132,7 @@ void xcc_stack_free(XCCStack *xs)
 int xcc_stack_increment(XCCStack *xs, const void *data)
 {
     if (xs->size <= xs->depth) {
-        int new_size = xs->size + XSTACK_CHUNK_SIZE;
+        unsigned int new_size = xs->size + XSTACK_CHUNK_SIZE;
         void **p = xcc_realloc(xs->entries, new_size*sizeof(void *));
         if (!p) {
             return XCC_RETURN_FAILURE;
@@ -216,8 +216,6 @@ void xcc_string_free(XCCString *xstr)
 {
     if (xstr) {
         xcc_free(xstr->s);
-        xstr->length = 0;
-        xstr->s = NULL;
         xcc_free(xstr);
     }
 }
