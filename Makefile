@@ -62,6 +62,11 @@ install: $(XCCLIB) $(PROG)
 	$(MKINSTALLDIRS) $(incdir)
 	$(INSTALL_DATA) xcc.h $(incdir)
 
+uninstall:
+	rm -f $(bindir)/$(PROG)
+	rm -f $(libdir)/$(XCCLIB)
+	rm -f $(incdir)/xcc.h
+
 check: b2xcc.c xcc.c
 	@echo -n "Testing self-consistency ... "
 	@diff -q b2xcc.c xcc.c
