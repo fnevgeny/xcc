@@ -29,7 +29,10 @@
 #include <stdio.h>
 #include <expat.h>
 
-#define XCC_VERSION_STRING  "xcc-0.0.9"
+#define XCC_VERSION_MAJOR   0
+#define XCC_VERSION_MINOR   1
+#define XCC_VERSION_NANO    0
+#define XCC_VERSION_STRING  "xcc-0.1.0"
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
@@ -67,7 +70,8 @@ typedef struct _XCCNode {
     void *data;
 } XCCNode;
 
-char *xcc_version_string(void);
+void xcc_get_version_numbers(int *major, int *minor, int *nano);
+char *xcc_get_version_string(void);
 
 void xcc_free(void *p);
 

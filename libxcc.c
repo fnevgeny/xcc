@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2003 Evgeny Stambulchik
+ * Copyright (c) 2000-2004 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -29,7 +29,14 @@
 
 #include "xccP.h"
 
-char *xcc_version_string(void)
+void xcc_get_version_numbers(int *major, int *minor, int *nano)
+{
+    *major = XCC_VERSION_MAJOR;
+    *minor = XCC_VERSION_MINOR;
+    *nano  = XCC_VERSION_NANO;
+}
+
+char *xcc_get_version_string(void)
 {
     return XCC_VERSION_STRING;
 }
@@ -387,7 +394,7 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name)
 
 int output_header(void)
 {
-    printf("/* Produced by %s */\n\n", xcc_version_string());
+    printf("/* Produced by %s */\n\n", xcc_get_version_string());
     printf("#include <xcc.h>\n");
     return XCC_RETURN_SUCCESS;
 }
