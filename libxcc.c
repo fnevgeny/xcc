@@ -423,8 +423,13 @@ int output_element_tab(const XCCStack *elements)
         Element *e;
         xcc_stack_get_data(elements, i, (void **) &e);
         e->id = i + 1;
-        printf("    {%d, \"%s\"}%s\n",
-            e->id, e->name, i == n_elements - 1 ? "":",");
+        if (e->name[0] == '#') {
+            printf("    {%d, %s}%s\n",
+                e->id, e->name + 1, i == n_elements - 1 ? "":",");
+        } else {
+            printf("    {%d, \"%s\"}%s\n",
+                e->id, e->name, i == n_elements - 1 ? "":",");
+        }
     }
     printf("};\n\n");
 
