@@ -686,8 +686,10 @@ int output_end_handler(const XCCStack *elements)
             xcc_free(buf1);
             buf1 = replace(buf2, "$U", "pdata->udata");
             xcc_free(buf2);
-            printf("        %s\n", buf1);
+            buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
             xcc_free(buf1);
+            printf("        %s\n", buf2);
+            xcc_free(buf2);
             printf("        }\n");
             printf("        break;\n");
         }
