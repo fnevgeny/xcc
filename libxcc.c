@@ -514,6 +514,25 @@ char *xcc_get_local(const char *name, const char *ns_uri, int *skip)
     return local_name;
 }
 
+static char *print_sharp_name(const char *name)
+{
+    char *pname;
+    
+    if (!name) {
+        pname = xstrdup("NULL");
+    } else
+    if (name[0] == '#') {
+        pname = xstrdup(name + 1);
+    } else {
+        pname = xcc_malloc(strlen(name) + 3);
+        if (pname) {
+            sprintf(pname, "\"%s\"", name);
+        }
+    }
+    
+    return pname;
+}
+
 int output_element_tab(const XCCStack *elements)
 {
     int i, n_elements;
@@ -522,15 +541,12 @@ int output_element_tab(const XCCStack *elements)
     printf("static XCCElementEntry XCCElementTab[] = {\n");
     for (i = 0; i < n_elements; i++) {
         Element *e;
+        char *pname;
         xcc_stack_get_data(elements, i, (void **) &e);
         e->id = i + 1;
-        if (e->name[0] == '#') {
-            printf("    {%d, %s}%s\n",
-                e->id, e->name + 1, i == n_elements - 1 ? "":",");
-        } else {
-            printf("    {%d, \"%s\"}%s\n",
-                e->id, e->name, i == n_elements - 1 ? "":",");
-        }
+        pname = print_sharp_name(e->name);
+        printf("    {%d, %s}%s\n", e->id, pname, i == n_elements - 1 ? "":",");
+        xcc_free(pname);
     }
     printf("};\n\n");
 
@@ -551,7 +567,7 @@ int output_element_tab(const XCCStack *elements)
 int output_start_handler(const XCCStack *elements, const char *ns_uri)
 {
     int i, n_elements;
-    char *buf1, *buf2;
+    char *pns_uri, *buf1, *buf2;
 
     n_elements = xcc_stack_depth(elements);
 
@@ -570,11 +586,8 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("        pdata->cbuffer[0] = '\\0';\n");
     printf("    }\n");
 
-    if (ns_uri) {
-        printf("    el_local  = xcc_get_local(el, \"%s\", &skip);\n", ns_uri);
-    } else {
-        printf("    el_local  = xcc_get_local(el, NULL, &skip);\n");
-    }
+    pns_uri = print_sharp_name(ns_uri);
+    printf("    el_local  = xcc_get_local(el, %s, &skip);\n", pns_uri);
     printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
     printf("        parent_id = 0;\n");
     printf("    } else {\n");
@@ -644,25 +657,18 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
         n_attributes = xcc_stack_depth(e->attributes);
         printf("            for (i = 0; attr[i]; i += 2) {\n");
         printf("                int askip = 0;\n");
-        if (ns_uri) {
-            printf("                aname  = xcc_get_local(attr[i], \"%s\", &askip);\n",
-                ns_uri);
-        } else {
-            printf("                aname  = xcc_get_local(attr[i], NULL, &askip);\n");
-        }
+        printf("                aname  = xcc_get_local(attr[i], %s, &askip);\n",
+            pns_uri);
         printf("                avalue = attr[i + 1];\n");
         for (j = 0; j < n_attributes; j++) {
             Attribute *a;
+            char *pname;
 
             xcc_stack_get_data(e->attributes, j, (void **) &a);
 
-            if (a->name[0] == '#') {
-                printf("                if (!strcmp(aname, %s)) {\n",
-                    a->name + 1);
-            } else {
-                printf("                if (!strcmp(aname, \"%s\")) {\n",
-                    a->name);
-            }
+            pname = print_sharp_name(a->name);
+            printf("                if (!strcmp(aname, %s)) {\n", pname);
+            xcc_free(pname);
             sprintf(abuf, "attribute.%s", a->atype->name);
             buf1 = replace(a->atype->ccode, "$$", abuf);
             buf2 = replace(buf1, "$?", "avalue");
@@ -689,6 +695,8 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
         printf("            }\n");
         printf("        break;\n");
     }
+
+    xcc_free(pns_uri);
 
     printf("    default:\n");
     printf("        element.unicast = NULL;\n");

@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <expat.h>
 
-#define XCC_VERSION_STRING  "xcc-0.0.6"
+#define XCC_VERSION_STRING  "xcc-0.0.7"
 
 #define XCC_NS_SEPARATOR    '|'
 
