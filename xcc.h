@@ -71,7 +71,7 @@ char *xcc_version_string(void);
 
 void xcc_free(void *p);
 
-void xcc_error(char *msg);
+void xcc_error(const char *fmt, ...);
 
 int xcc_stack_increment(XCCStack *xs, const void *data);
 int xcc_stack_decrement(XCCStack *xs);

@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <expat.h>
 
 #include "xccP.h"
@@ -33,9 +34,16 @@ char *xcc_version_string(void)
     return XCC_VERSION_STRING;
 }
 
-void xcc_error(char *msg)
+void xcc_error(const char *fmt, ...)
 {
-    fprintf(stderr, "xcc_error: %s\n", msg);
+    va_list ap;
+    char new_fmt[128];
+    sprintf(new_fmt, "xcc: %s\n", fmt);
+
+    va_start(ap, fmt);
+    
+    vfprintf(stderr, new_fmt, ap);
+    va_end(ap);
 }
 
 void xcc_free(void *p)
@@ -631,7 +639,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("        break;\n");
     printf("    default:\n");
     printf("        if (!skip) {\n");
-    printf("            xcc_error(\"parent:child 1\");\n");
+    printf("            xcc_error(\"unexpected \\\"%%s\\\"->\\\"%%s\\\" combination\", pnode ? pnode->name:\"xml\", el_local);\n");
     printf("            pdata->error = 1;\n");
     printf("        }\n");
     printf("        break;\n");
@@ -695,7 +703,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
             printf("                } else\n");
         }
         printf("                if (!askip) {\n");
-        printf("                    xcc_error(\"unknown attr\");\n");
+        printf("                    xcc_error(\"unknown attribute \\\"%%s\\\" of element \\\"%%s\\\"\", aname, el_local);\n");
         printf("                }\n");
         printf("                xcc_free(aname);\n");
         printf("            }\n");
@@ -707,7 +715,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("    default:\n");
     printf("        element.unicast = NULL;\n");
     printf("        if (!skip) {\n");
-    printf("            xcc_error(\"unknown element\");\n");
+    printf("            xcc_error(\"unknown element \\\"%%s\\\"\", el_local);\n");
     printf("            pdata->error = 1;\n");
     printf("        }\n");
     printf("        break;\n");
@@ -840,7 +848,7 @@ int output_end_handler(const XCCStack *elements)
 
     printf("    default:\n");
     printf("        if (!skip) {\n");
-    printf("            xcc_error(\"parent:child 2\");\n");
+    printf("            xcc_error(\"internal error\");\n");
     printf("            pdata->error = 1;\n");
     printf("        }\n");
     printf("        break;\n");
