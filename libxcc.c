@@ -202,11 +202,9 @@ XCCString *xcc_string_new(void)
 void xcc_string_free(XCCString *xstr)
 {
     if (xstr) {
-        if (xstr->length) {
-            xcc_free(xstr->s);
-            xstr->length = 0;
-            xstr->s = NULL;
-        }
+        xcc_free(xstr->s);
+        xstr->length = 0;
+        xstr->s = NULL;
         xcc_free(xstr);
     }
 }
