@@ -100,7 +100,7 @@ void attribute_free(Attribute *a);
 Child *child_new(void);
 void child_free(Child *c);
 
-void node_free(Node *n);
+void xcc_node_free(XCCNode *n);
 
 XCCStack *xcc_stack_new(XCC_stack_data_free data_free);
 void xcc_stack_free(XCCStack *xs);

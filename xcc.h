@@ -61,11 +61,11 @@ typedef struct _XCCParserData {
     void *udata;
 } XCCParserData;
 
-typedef struct _Node {
+typedef struct _XCCNode {
     char *name;
     int  id;
     void *data;
-} Node;
+} XCCNode;
 
 char *xcc_version_string(void);
 
@@ -82,7 +82,7 @@ XCCString *xcc_string_new(void);
 void xcc_string_free(XCCString *xstr);
 int xcc_string_set(XCCString *xstr, const char *s);
 
-Node *node_new(void);
+XCCNode *xcc_node_new(void);
 
 char *xcc_get_local(const char *name, const char *ns_uri, int *skip);
 

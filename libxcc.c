@@ -335,15 +335,15 @@ void child_free(Child *c)
     }
 }
 
-Node *node_new(void)
+XCCNode *xcc_node_new(void)
 {
-    Node *n;
-    n = xcc_malloc(sizeof(Node));
-    memset(n, 0, sizeof(Node));
+    XCCNode *n;
+    n = xcc_malloc(sizeof(XCCNode));
+    memset(n, 0, sizeof(XCCNode));
     return n;
 }
 
-void node_free(Node *n)
+void xcc_node_free(XCCNode *n)
 {
     if (n) {
         xcc_free(n->name);
@@ -574,7 +574,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("void xcc_start_handler(void *data, const char *el, const char **attr)\n");  
     printf("{\n");
     printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
-    printf("    Node *pnode = NULL, *node;\n");
+    printf("    XCCNode *pnode = NULL, *node;\n");
     printf("    XCCEType element;\n");
     printf("    XCCAType attribute;\n");
     printf("    int i, element_id, parent_id, parent_child, skip = 0;\n");
@@ -711,7 +711,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("    }\n\n");
 
     
-    printf("    node = node_new();\n");
+    printf("    node = xcc_node_new();\n");
     printf("    node->name = el_local;\n");
     printf("    node->id = element_id;\n");
     printf("    node->data = element.unicast;\n");
@@ -748,7 +748,7 @@ int output_end_handler(const XCCStack *elements)
     printf("void xcc_end_handler(void *data, const char *el)\n");  
     printf("{\n");
     printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
-    printf("    Node *node, *pnode;\n");
+    printf("    XCCNode *node, *pnode;\n");
     printf("    int element_id, parent_id, parent_child, skip = 0;\n");
 
     printf("    XCCEType element, pelement;\n");
@@ -852,7 +852,7 @@ int output_end_handler(const XCCStack *elements)
 
 void *xcc_get_root(XCCParserData *pdata)
 {
-    Node *node;
+    XCCNode *node;
     if (xcc_stack_get_data(pdata->nodes, 0, (void **) &node) != XCC_RETURN_SUCCESS) {
         return NULL;
     } else {
@@ -899,7 +899,7 @@ int xcc_parse(FILE *fp, void *udata, void **root,
     pdata.cbufsize = 0;
     pdata.cbuflen  = 0;
  
-    pdata.nodes    = xcc_stack_new((XCC_stack_data_free) node_free);
+    pdata.nodes    = xcc_stack_new((XCC_stack_data_free) xcc_node_free);
     pdata.root     = NULL;
     
     pdata.udata    = udata;
