@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2002 Evgeny Stambulchik
+ * Copyright (c) 2000-2003 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -27,7 +27,9 @@
 #include <stdio.h>
 #include <expat.h>
 
-#define XCC_VERSION_STRING  "xcc-0.0.5"
+#define XCC_VERSION_STRING  "xcc-0.0.6"
+
+#define XCC_NS_SEPARATOR    '|'
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
@@ -77,6 +79,7 @@ typedef struct _XCC {
     XCCStack *elements;
     XCCString *preamble;
     XCCString *postamble;
+    char *ns_uri;
 } XCC;
 
 typedef struct _XCCElementEntry {
@@ -169,8 +172,10 @@ int output_postamble(const XCCString *post);
 int output_atype_union(const XCCStack *a_types);
 int output_etype_union(const XCCStack *e_types);
 int output_element_tab(const XCCStack *elements);
-int output_start_handler(const XCCStack *elements);
+int output_start_handler(const XCCStack *elements, const char *ns_uri);
 int output_end_handler(const XCCStack *elements);
+
+char *xcc_get_local(const char *name, const char *ns_uri, int *skip);
 
 void *xcc_get_root(XCCParserData *pdata);
 

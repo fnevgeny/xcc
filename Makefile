@@ -2,7 +2,7 @@
 
 CC = gcc
 CPPFLAGS = -I.
-CFLAGS = -g -ansi -pedantic -Wall -W -Wpointer-arith
+CFLAGS = -g -ansi -pedantic -Wall -W -Wno-unused-parameter -Wpointer-arith
 LDFLAGS =
 
 AR = ar cru

@@ -298,7 +298,7 @@ int main(void) {
     /* sort elements */
     output_element_tab(pdata.elements);
 
-    output_start_handler(pdata.elements);
+    output_start_handler(pdata.elements, NULL);
     
     output_end_handler(pdata.elements);
 

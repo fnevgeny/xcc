@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2002 Evgeny Stambulchik
+ * Copyright (c) 2000-2003 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -498,6 +498,22 @@ static char *replace(const char *str, const char *f, const char *r)
     return retval;
 }
 
+char *xcc_get_local(const char *name, const char *ns_uri, int *skip)
+{
+    char *sep, *local_name;
+    if (ns_uri && (sep = strchr(name, XCC_NS_SEPARATOR))) {
+        char *buf = strstr(name, ns_uri);
+        if (buf != name) {
+            *skip = 1;
+        }
+        local_name = xstrdup(sep + 1);
+    } else {
+        local_name = xstrdup(name);
+    }
+    
+    return local_name;
+}
+
 int output_element_tab(const XCCStack *elements)
 {
     int i, n_elements;
@@ -532,7 +548,7 @@ int output_element_tab(const XCCStack *elements)
     return XCC_RETURN_SUCCESS;
 }
 
-int output_start_handler(const XCCStack *elements)
+int output_start_handler(const XCCStack *elements, const char *ns_uri)
 {
     int i, n_elements;
     char *buf1, *buf2;
@@ -545,22 +561,40 @@ int output_start_handler(const XCCStack *elements)
     printf("    Node *pnode = NULL, *node;\n");
     printf("    XCCEType element;\n");
     printf("    XCCAType attribute;\n");
-    printf("    int i, element_id, parent_id, parent_child;\n");
-    printf("    const char *aname, *avalue;\n");
+    printf("    int i, element_id, parent_id, parent_child, skip = 0;\n");
+    printf("    const char *avalue;\n");
+    printf("    char *aname, *el_local;\n");
     printf("\n");
     printf("    pdata->cbuflen = 0;\n");
     printf("    if (pdata->cbufsize) {\n");
     printf("        pdata->cbuffer[0] = '\\0';\n");
     printf("    }\n");
-    printf("    element_id = get_element_id_by_name(el);\n");
+
+    if (ns_uri) {
+        printf("    el_local  = xcc_get_local(el, \"%s\", &skip);\n", ns_uri);
+    } else {
+        printf("    el_local  = xcc_get_local(el, NULL, &skip);\n");
+    }
     printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
     printf("        parent_id = 0;\n");
     printf("    } else {\n");
     printf("        xcc_stack_get_last(pdata->nodes, (void **) &pnode);\n");
     printf("        parent_id = pnode->id;\n");
     printf("    }\n");
+    printf("    if (parent_id < 0) {\n");
+    printf("        skip = 1;\n");
+    printf("    }\n");
+    printf("    if (skip) {\n");
+    printf("        element_id = -1;\n");
+    printf("    } else {\n");
+    printf("        element_id = get_element_id_by_name(el_local);\n");
+    printf("    }\n");
 
-    printf("    parent_child = %d*parent_id + element_id;\n\n", n_elements);
+    printf("    if (parent_id >= 0 && element_id >= 0) {\n");
+    printf("        parent_child = %d*parent_id + element_id;\n", n_elements);
+    printf("    } else {\n");
+    printf("        parent_child = -1;\n");
+    printf("    }\n\n");
     printf("    switch (parent_child) {\n");
     printf("    case 1:\n");
     
@@ -582,7 +616,9 @@ int output_start_handler(const XCCStack *elements)
     
     printf("        break;\n");
     printf("    default:\n");
-    printf("        xcc_error(\"parent:child\");\n");
+    printf("        if (!skip) {\n");
+    printf("            xcc_error(\"parent:child 1\");\n");
+    printf("        }\n");
     printf("        break;\n");
     printf("    }\n\n");
 
@@ -606,62 +642,65 @@ int output_start_handler(const XCCStack *elements)
         printf("            %s\n", buf1);
         xcc_free(buf1);
         n_attributes = xcc_stack_depth(e->attributes);
-        if (n_attributes) {
-            printf("            for (i = 0; attr[i]; i += 2) {\n");
-            printf("                aname  = attr[i];\n");
-            printf("                avalue = attr[i + 1];\n");
-            for (j = 0; j < n_attributes; j++) {
-                Attribute *a;
-
-                xcc_stack_get_data(e->attributes, j, (void **) &a);
-
-                if (a->name[0] == '#') {
-                    printf("                if (!strcmp(aname, %s)) {\n",
-                        a->name + 1);
-                } else {
-                    printf("                if (!strcmp(aname, \"%s\")) {\n",
-                        a->name);
-                }
-                sprintf(abuf, "attribute.%s", a->atype->name);
-                buf1 = replace(a->atype->ccode, "$$", abuf);
-                buf2 = replace(buf1, "$?", "avalue");
-                xcc_free(buf1);
-                printf("                    %s\n", buf2);
-                xcc_free(buf2);
-                buf1 = replace(a->ccode, "$$", ebuf);
-                buf2 = replace(buf1, "$?", abuf);
-                xcc_free(buf1);
-                buf1 = replace(buf2, "$U", "pdata->udata");
-                xcc_free(buf2);
-                buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
-                xcc_free(buf1);
-                printf("                {\n");
-                printf("                        %s\n", buf2);
-                printf("                }\n");
-                xcc_free(buf2);
-                printf("                } else\n");
-            }
-            printf("                {\n");
-            printf("                    xcc_error(\"unknown attr\");\n");
-            printf("                }\n");
-            printf("            }\n");
+        printf("            for (i = 0; attr[i]; i += 2) {\n");
+        printf("                int askip = 0;\n");
+        if (ns_uri) {
+            printf("                aname  = xcc_get_local(attr[i], \"%s\", &askip);\n",
+                ns_uri);
         } else {
-            printf("        if (attr && *attr) {\n");
-            printf("            xcc_error(\"unexpected attr\"); /* strict ?? */\n");
-            printf("        }\n");
+            printf("                aname  = xcc_get_local(attr[i], NULL, &askip);\n");
         }
+        printf("                avalue = attr[i + 1];\n");
+        for (j = 0; j < n_attributes; j++) {
+            Attribute *a;
+
+            xcc_stack_get_data(e->attributes, j, (void **) &a);
+
+            if (a->name[0] == '#') {
+                printf("                if (!strcmp(aname, %s)) {\n",
+                    a->name + 1);
+            } else {
+                printf("                if (!strcmp(aname, \"%s\")) {\n",
+                    a->name);
+            }
+            sprintf(abuf, "attribute.%s", a->atype->name);
+            buf1 = replace(a->atype->ccode, "$$", abuf);
+            buf2 = replace(buf1, "$?", "avalue");
+            xcc_free(buf1);
+            printf("                    %s\n", buf2);
+            xcc_free(buf2);
+            buf1 = replace(a->ccode, "$$", ebuf);
+            buf2 = replace(buf1, "$?", abuf);
+            xcc_free(buf1);
+            buf1 = replace(buf2, "$U", "pdata->udata");
+            xcc_free(buf2);
+            buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
+            xcc_free(buf1);
+            printf("                {\n");
+            printf("                        %s\n", buf2);
+            printf("                }\n");
+            xcc_free(buf2);
+            printf("                } else\n");
+        }
+        printf("                if (!askip) {\n");
+        printf("                    xcc_error(\"unknown attr\");\n");
+        printf("                }\n");
+        printf("                xcc_free(aname);\n");
+        printf("            }\n");
         printf("        break;\n");
     }
 
     printf("    default:\n");
     printf("        element.unicast = NULL;\n");
-    printf("        xcc_error(\"unknown element 1\");\n");
+    printf("        if (!skip) {\n");
+    printf("            xcc_error(\"unknown element\");\n");
+    printf("        }\n");
     printf("        break;\n");
     printf("    }\n\n");
 
     
     printf("    node = node_new();\n");
-    printf("    node->name = xstrdup(el);\n");
+    printf("    node->name = el_local;\n");
     printf("    node->id = element_id;\n");
     printf("    node->data = element.unicast;\n");
     
@@ -698,11 +737,10 @@ int output_end_handler(const XCCStack *elements)
     printf("{\n");
     printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
     printf("    Node *node, *pnode;\n");
-    printf("    int element_id, parent_id, parent_child;\n");
+    printf("    int element_id, parent_id, parent_child, skip = 0;\n");
 
     printf("    XCCEType element, pelement;\n");
     printf("    char *cdata = pdata->cbuffer;\n");
-    printf("    element_id = get_element_id_by_name(el);\n");
     printf("    xcc_stack_get_last(pdata->nodes, (void **) &node);\n");
     printf("    element_id = node->id;\n");
     printf("    element.unicast = node->data;\n");
@@ -742,7 +780,12 @@ int output_end_handler(const XCCStack *elements)
     printf("        pelement.unicast = pnode->data;\n");
     printf("    }\n");
 
-    printf("    parent_child = %d*parent_id + element_id;\n\n", n_elements);
+    printf("    if (parent_id >= 0 && element_id >= 0) {\n");
+    printf("        parent_child = %d*parent_id + element_id;\n", n_elements);
+    printf("    } else {\n");
+    printf("        parent_child = -1;\n");
+    printf("        skip = 1;\n");
+    printf("    }\n\n");
     printf("    switch (parent_child) {\n");
     printf("    case 1:\n");
     printf("        break;\n");
@@ -778,7 +821,9 @@ int output_end_handler(const XCCStack *elements)
     }
 
     printf("    default:\n");
-    printf("        xcc_error(\"parent:child\");\n");
+    printf("        if (!skip) {\n");
+    printf("            xcc_error(\"parent:child 2\");\n");
+    printf("        }\n");
     printf("        break;\n");
     printf("    }\n\n");
 
@@ -828,7 +873,7 @@ int xcc_parse(FILE *fp, void *udata, void **root,
     XCCParserData pdata;
     char Buff[BUFFSIZE];
     
-    xp = XML_ParserCreate(NULL);
+    xp = XML_ParserCreateNS(NULL, XCC_NS_SEPARATOR);
     if (!xp) {
         *root = NULL;
         xcc_error("Couldn't allocate memory for parser");

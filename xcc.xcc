@@ -37,6 +37,10 @@
 
     <!-- Elements -->
     <element name="parser" type="xcc">
+        <!-- Attributes -->
+        <attribute name="ns" type="sval">
+            $$->ns_uri = $?;
+        </attribute>
         <!-- Child elements -->
         <child name="preamble">
             $$->preamble = $?;
@@ -168,7 +172,7 @@ int main(void)
     /* sort elements */
     output_element_tab(xcc->elements);
 
-    output_start_handler(xcc->elements);
+    output_start_handler(xcc->elements, xcc->ns_uri);
     
     output_end_handler(xcc->elements);
 
