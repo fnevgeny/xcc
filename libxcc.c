@@ -799,6 +799,8 @@ int xcc_parse(FILE *fp, void *udata, void **root,
         }
     }
     
+    xcc_stack_free(pdata.nodes);
+    
     *root = pdata.root;
     if (!pdata.error) {
         return XCC_RETURN_SUCCESS;
