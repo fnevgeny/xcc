@@ -53,10 +53,10 @@ static void register_attribute_type(XCCStack *a_types, const char **attr)
     
     for (i = 0; attr[i]; i += 2) {
         if (!strcmp(attr[i], "name")) {
-            atype->name = xstrdup(attr[i + 1]);
+            atype->name = xcc_strdup(attr[i + 1]);
         } else
         if (!strcmp(attr[i], "ctype")) {
-            atype->ctype = xstrdup(attr[i + 1]);
+            atype->ctype = xcc_strdup(attr[i + 1]);
         }
     }
     xcc_stack_increment(a_types, atype);
@@ -71,10 +71,10 @@ static void register_element_type(XCCStack *e_types, const char **attr)
     
     for (i = 0; attr[i]; i += 2) {
         if (!strcmp(attr[i], "name")) {
-            etype->name = xstrdup(attr[i + 1]);
+            etype->name = xcc_strdup(attr[i + 1]);
         } else
         if (!strcmp(attr[i], "ctype")) {
-            etype->ctype = xstrdup(attr[i + 1]);
+            etype->ctype = xcc_strdup(attr[i + 1]);
         }
     }
     xcc_stack_increment(e_types, etype);
@@ -89,7 +89,7 @@ static void register_element(XCCStack *elements, XCCStack *e_types, const char *
     
     for (i = 0; attr[i]; i += 2) {
         if (!strcmp(attr[i], "name")) {
-            e->name = xstrdup(attr[i + 1]);
+            e->name = xcc_strdup(attr[i + 1]);
         } else
         if (!strcmp(attr[i], "type")) {
             e->etype = get_etype_by_name(e_types, attr[i + 1]);
@@ -107,7 +107,7 @@ static void register_element_attribute(Element *e, XCCStack *a_types, const char
     
     for (i = 0; attr[i]; i += 2) {
         if (!strcmp(attr[i], "name")) {
-            a->name = xstrdup(attr[i + 1]);
+            a->name = xcc_strdup(attr[i + 1]);
         } else
         if (!strcmp(attr[i], "type")) {
             a->atype = get_atype_by_name(a_types, attr[i + 1]);
@@ -126,7 +126,7 @@ static void register_element_child(Element *e, const char **attr)
     
     for (i = 0; attr[i]; i += 2) {
         if (!strcmp(attr[i], "name")) {
-            c->name = xstrdup(attr[i + 1]);
+            c->name = xcc_strdup(attr[i + 1]);
         }
     }
 
@@ -179,26 +179,26 @@ static void end(void *data, const char *el) {
     if (!strcmp(el, "attribute-type")) {
         AType *atype;
         xcc_stack_get_last(pdata->a_types, (void **) &atype);
-        atype->ccode = xstrdup(pdata->cbuffer);
+        atype->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "element-type")) {
         EType *etype;
         xcc_stack_get_last(pdata->e_types, (void **) &etype);
-        etype->ccode = xstrdup(pdata->cbuffer);
+        etype->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
         Attribute *a;
         xcc_stack_get_last(pdata->elements, (void **) &e);
         xcc_stack_get_last(e->attributes, (void **) &a);
-        a->ccode = xstrdup(pdata->cbuffer);
+        a->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "child")) {
         Element *e;
         Child *c;
         xcc_stack_get_last(pdata->elements, (void **) &e);
         xcc_stack_get_last(e->children, (void **) &c);
-        c->ccode = xstrdup(pdata->cbuffer);
+        c->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "data")) {
         Element *e;

@@ -60,7 +60,7 @@ void *xcc_malloc(size_t size)
     }
 }
 
-char *xstrdup(const char *s)
+char *xcc_strdup(const char *s)
 {
     char *ret;
     if (s) {
@@ -74,7 +74,7 @@ char *xstrdup(const char *s)
     return ret;
 }
 
-int xstrlen(const char *s)
+static int xcc_strlen(const char *s)
 {
     if (s) {
         return strlen(s);
@@ -213,8 +213,8 @@ int xcc_string_set(XCCString *xstr, const char *s)
 {
     if (xstr) {
         xcc_free(xstr->s);
-        xstr->s = xstrdup(s);
-        xstr->length = xstrlen(xstr->s);
+        xstr->s = xcc_strdup(s);
+        xstr->length = xcc_strlen(xstr->s);
     }
     
     return XCC_RETURN_SUCCESS;
@@ -506,9 +506,9 @@ char *xcc_get_local(const char *name, const char *ns_uri, int *skip)
         if (buf != name) {
             *skip = 1;
         }
-        local_name = xstrdup(sep + 1);
+        local_name = xcc_strdup(sep + 1);
     } else {
-        local_name = xstrdup(name);
+        local_name = xcc_strdup(name);
     }
     
     return local_name;
@@ -519,10 +519,10 @@ static char *print_sharp_name(const char *name)
     char *pname;
     
     if (!name) {
-        pname = xstrdup("NULL");
+        pname = xcc_strdup("NULL");
     } else
     if (name[0] == '#') {
-        pname = xstrdup(name + 1);
+        pname = xcc_strdup(name + 1);
     } else {
         pname = xcc_malloc(strlen(name) + 3);
         if (pname) {

@@ -83,7 +83,7 @@ typedef struct _Child {
 void *xcc_malloc(size_t size);
 #define xcc_realloc realloc
 
-char *xstrdup(const char *s);
+char *xcc_strdup(const char *s);
 
 AType *atype_new(void);
 void atype_free(AType *atype);

@@ -10,7 +10,7 @@
     
     <!-- Attribute types -->
     <attribute-type name="sval" ctype="char *">
-        $$ = xstrdup($?);
+        $$ = xcc_strdup($?);
     </attribute-type>
 
     <!-- Element types -->
@@ -75,7 +75,7 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xstrdup($?);
+            $$->ccode = xcc_strdup($?);
         </data>
     </element>
     <element name="element-type" type="etype">
@@ -88,7 +88,7 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xstrdup($?);
+            $$->ccode = xcc_strdup($?);
         </data>
     </element>
     <element name="element" type="element">
@@ -131,7 +131,7 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xstrdup($?);
+            $$->ccode = xcc_strdup($?);
         </data>
     </element>
     <element name="child" type="child">
@@ -141,7 +141,7 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xstrdup($?);
+            $$->ccode = xcc_strdup($?);
         </data>
     </element>
     <element name="data" type="string">
