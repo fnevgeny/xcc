@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <expat.h>
 
-#define XCC_VERSION_STRING  "xcc-0.0.3"
+#define XCC_VERSION_STRING  "xcc-0.0.4"
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
