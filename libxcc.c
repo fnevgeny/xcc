@@ -187,6 +187,17 @@ XCCString *xcc_string_new(void)
     return xstr;
 }
 
+void xcc_string_free(XCCString *xstr)
+{
+    if (xstr) {
+        if (xstr->length) {
+            xcc_free(xstr->s);
+            xstr->length = 0;
+            xstr->s = NULL;
+        }
+    }
+}
+
 int xcc_string_set(XCCString *xstr, const char *s)
 {
     if (xstr) {
@@ -447,6 +458,7 @@ int output_start_handler(const XCCStack *elements)
     printf("    int i, element_id, parent_id, parent_child;\n");
     printf("    const char *aname, *avalue;\n");
     printf("\n");
+    printf("    pdata->cbuflen = 0;\n");
     printf("    element_id = get_element_id_by_name(el);\n");
     printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
     printf("        parent_id  = 0;\n");
@@ -538,6 +550,7 @@ int output_start_handler(const XCCStack *elements)
     }
 
     printf("    default:\n");
+    printf("        element.unicast = NULL;\n");
     printf("        xcc_error(\"unknown element 1\");\n");
     printf("        break;\n");
     printf("    }\n\n");
@@ -550,8 +563,6 @@ int output_start_handler(const XCCStack *elements)
     
     printf("    xcc_stack_increment(pdata->nodes, node);\n");
     
-    printf("    pdata->cbuflen = 0;\n");
-
     printf("}\n\n");
     
     return XCC_RETURN_SUCCESS;

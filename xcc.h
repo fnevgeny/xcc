@@ -61,6 +61,7 @@ typedef struct _XCCString {
 } XCCString;
 
 XCCString *xcc_string_new(void);
+void xcc_string_free(XCCString *xstr);
 int xcc_string_set(XCCString *xstr, const char *s);
 
 /* ------------------- */
