@@ -464,7 +464,7 @@ int output_start_handler(const XCCStack *elements)
     printf("void xcc_start_handler(void *data, const char *el, const char **attr)\n");  
     printf("{\n");
     printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
-    printf("    Node *pnode, *node;\n");
+    printf("    Node *pnode = NULL, *node;\n");
     printf("    XCCEType element;\n");
     printf("    XCCAType attribute;\n");
     printf("    int i, element_id, parent_id, parent_child;\n");
@@ -476,10 +476,10 @@ int output_start_handler(const XCCStack *elements)
     printf("    }\n");
     printf("    element_id = get_element_id_by_name(el);\n");
     printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
-    printf("        parent_id  = 0;\n");
+    printf("        parent_id = 0;\n");
     printf("    } else {\n");
     printf("        xcc_stack_get_last(pdata->nodes, (void **) &pnode);\n");
-    printf("        parent_id  = pnode->id;\n");
+    printf("        parent_id = pnode->id;\n");
     printf("    }\n");
 
     printf("    parent_child = %d*parent_id + element_id;\n\n", n_elements);
@@ -523,8 +523,10 @@ int output_start_handler(const XCCStack *elements)
         buf1 = replace(e->etype->ccode, "$$", ebuf);
         buf2 = replace(buf1, "$U", "pdata->udata");
         xcc_free(buf1);
-        printf("            %s\n", buf2);
+        buf1 = replace(buf2, "$P", "pnode->data");
         xcc_free(buf2);
+        printf("            %s\n", buf1);
+        xcc_free(buf1);
         n_attributes = xcc_stack_depth(e->attributes);
         if (n_attributes) {
             printf("            for (i = 0; attr[i]; i += 2) {\n");
