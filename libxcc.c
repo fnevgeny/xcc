@@ -663,11 +663,15 @@ int output_end_handler(const XCCStack *elements)
             ce = get_element_by_name(elements, c->type);
             sprintf(ebuf, "element.%s", ce->etype->name);
             printf("    case %d:\n", n_elements*parent_id + ce->id);
+            printf("        {\n");
             buf1 = replace(c->ccode, "$$", pbuf);
             buf2 = replace(buf1, "$?", ebuf);
-            printf("        %s\n", buf2);
             xcc_free(buf1);
+            buf1 = replace(buf2, "$U", "pdata->udata");
             xcc_free(buf2);
+            printf("        %s\n", buf1);
+            xcc_free(buf1);
+            printf("        }\n");
             printf("        break;\n");
         }
     }
