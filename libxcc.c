@@ -521,8 +521,10 @@ int output_start_handler(const XCCStack *elements)
         
         printf("    case %d: /* %s */\n", element_id, e->name);
         buf1 = replace(e->etype->ccode, "$$", ebuf);
-        printf("            %s\n", buf1);
+        buf2 = replace(buf1, "$U", "pdata->udata");
         xcc_free(buf1);
+        printf("            %s\n", buf2);
+        xcc_free(buf2);
         n_attributes = xcc_stack_depth(e->attributes);
         if (n_attributes) {
             printf("            for (i = 0; attr[i]; i += 2) {\n");
