@@ -132,7 +132,7 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 
 /* ------------------- */
 
-typedef struct _ParserData {
+typedef struct _XCCParserData {
     char *cbuffer;
     int cbufsize;
     int cbuflen;
@@ -141,7 +141,7 @@ typedef struct _ParserData {
     void *root;
     
     void *udata;
-} ParserData;
+} XCCParserData;
 
 int output_preamble(const XCCString *pre);
 int output_postamble(const XCCString *post);
@@ -151,7 +151,7 @@ int output_element_tab(const XCCStack *elements);
 int output_start_handler(const XCCStack *elements);
 int output_end_handler(const XCCStack *elements);
 
-void *xcc_get_root(ParserData *pdata);
+void *xcc_get_root(XCCParserData *pdata);
 
 void xcc_char_data_handler(void *data, const char *s, int len);
 

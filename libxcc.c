@@ -456,7 +456,7 @@ int output_start_handler(const XCCStack *elements)
 
     printf("void xcc_start_handler(void *data, const char *el, const char **attr)\n");  
     printf("{\n");
-    printf("    ParserData *pdata = (ParserData *) data;\n");
+    printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
     printf("    Node *pnode, *node;\n");
     printf("    XCCEType element;\n");
     printf("    XCCAType attribute;\n");
@@ -597,7 +597,7 @@ int output_end_handler(const XCCStack *elements)
 
     printf("void xcc_end_handler(void *data, const char *el)\n");  
     printf("{\n");
-    printf("    ParserData *pdata = (ParserData *) data;\n");
+    printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
     printf("    Node *node, *pnode;\n");
     printf("    int element_id, parent_id, parent_child;\n");
 
@@ -685,7 +685,7 @@ int output_end_handler(const XCCStack *elements)
 
 #define BUFFSIZE	8192
 
-void *xcc_get_root(ParserData *pdata)
+void *xcc_get_root(XCCParserData *pdata)
 {
     Node *node;
     if (xcc_stack_get_data(pdata->nodes, 0, (void **) &node) != XCC_RETURN_SUCCESS) {
@@ -697,7 +697,7 @@ void *xcc_get_root(ParserData *pdata)
 
 void xcc_char_data_handler(void *data, const char *s, int len)
 {
-    ParserData *pdata = (ParserData *) data;
+    XCCParserData *pdata = (XCCParserData *) data;
     int new_len;
     
     new_len = pdata->cbuflen + len;
@@ -717,7 +717,7 @@ int xcc_parse(FILE *fp, void *udata, void **root,
               XML_EndElementHandler end_element_handler)
 {
     XML_Parser xp;
-    ParserData pdata;
+    XCCParserData pdata;
     char Buff[BUFFSIZE];
     
     xp = XML_ParserCreate(NULL);
