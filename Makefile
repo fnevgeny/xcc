@@ -3,6 +3,14 @@ TOP = .
 
 include $(TOP)/Make.conf
 
+bindir = $(PREFIX)/bin
+libdir = $(PREFIX)/lib
+incdir = $(PREFIX)/include
+
+CPPFLAGS = -I. $(EXPAT_INC)
+CFLAGS = $(DBG_CFLAGS) $(OPT_CFLAGS) $(LNT_CFLAGS)
+LDFLAGS =
+
 LIBS = $(EXPAT_LIB)
 
 XCC_XCC = xcc.xcc
