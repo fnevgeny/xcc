@@ -581,6 +581,9 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("    const char *avalue;\n");
     printf("    char *aname, *el_local;\n");
     printf("\n");
+    printf("    if (pdata->error) {\n");
+    printf("        return;\n");
+    printf("    }\n\n");
     printf("    pdata->cbuflen = 0;\n");
     printf("    if (pdata->cbufsize) {\n");
     printf("        pdata->cbuffer[0] = '\\0';\n");
@@ -631,6 +634,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("    default:\n");
     printf("        if (!skip) {\n");
     printf("            xcc_error(\"parent:child 1\");\n");
+    printf("            pdata->error = 1;\n");
     printf("        }\n");
     printf("        break;\n");
     printf("    }\n\n");
@@ -706,6 +710,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
     printf("        element.unicast = NULL;\n");
     printf("        if (!skip) {\n");
     printf("            xcc_error(\"unknown element\");\n");
+    printf("            pdata->error = 1;\n");
     printf("        }\n");
     printf("        break;\n");
     printf("    }\n\n");
@@ -752,7 +757,10 @@ int output_end_handler(const XCCStack *elements)
     printf("    int element_id, parent_id, parent_child, skip = 0;\n");
 
     printf("    XCCEType element, pelement;\n");
-    printf("    char *cdata = pdata->cbuffer;\n");
+    printf("    char *cdata = pdata->cbuffer;\n\n");
+    printf("    if (pdata->error) {\n");
+    printf("        return;\n");
+    printf("    }\n\n");
     printf("    xcc_stack_get_last(pdata->nodes, (void **) &node);\n");
     printf("    element_id = node->id;\n");
     printf("    element.unicast = node->data;\n");
@@ -835,6 +843,7 @@ int output_end_handler(const XCCStack *elements)
     printf("    default:\n");
     printf("        if (!skip) {\n");
     printf("            xcc_error(\"parent:child 2\");\n");
+    printf("            pdata->error = 1;\n");
     printf("        }\n");
     printf("        break;\n");
     printf("    }\n\n");
@@ -864,6 +873,10 @@ void xcc_char_data_handler(void *data, const char *s, int len)
 {
     XCCParserData *pdata = (XCCParserData *) data;
     int new_len;
+
+    if (pdata->error) {
+        return;
+    }
     
     new_len = pdata->cbuflen + len;
     
