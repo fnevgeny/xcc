@@ -42,13 +42,16 @@ char *xstrdup(const char *s);
 
 /* ------------------- */
 
+typedef void (*XCC_stack_data_free)(void *data); 
+
 typedef struct _XCCStack {
     unsigned int size;
     unsigned int depth;
     void **entries;
+    XCC_stack_data_free data_free;
 } XCCStack;
 
-XCCStack *xcc_stack_new(void);
+XCCStack *xcc_stack_new(XCC_stack_data_free data_free);
 void xcc_stack_free(XCCStack *xs);
 int xcc_stack_increment(XCCStack *xs, const void *data);
 int xcc_stack_decrement(XCCStack *xs);
@@ -119,13 +122,26 @@ typedef struct _Child {
     char *ccode;
 } Child;
 
-XCC *xcc_new(void);
+XCC *xcc_xcc_new(void);
+void xcc_xcc_free(XCC *xcc);
+
 AType *atype_new(void);
+void atype_free(AType *atype);
+
 EType *etype_new(void);
+void etype_free(EType *etype);
+
 Element *element_new(void);
+void element_free(Element *e);
+
 Attribute *attribute_new(void);
+void attribute_free(Attribute *a);
+
 Child *child_new(void);
+void child_free(Child *c);
+
 Node *node_new(void);
+void node_free(Node *n);
 
 void xcc_error(char *msg);
 

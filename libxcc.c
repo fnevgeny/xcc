@@ -85,14 +85,15 @@ int xstrlen(const char *s)
 
 #define XSTACK_CHUNK_SIZE   16
 
-XCCStack *xcc_stack_new(void)
+XCCStack *xcc_stack_new(XCC_stack_data_free data_free)
 {
     XCCStack *xs = xcc_malloc(sizeof(XCCStack));
     
     if (xs) {
-        xs->size    = 0;
-        xs->depth   = 0;
-        xs->entries = NULL;
+        xs->size      = 0;
+        xs->depth     = 0;
+        xs->entries   = NULL;
+        xs->data_free = data_free;
     }
     
     return xs;
@@ -102,9 +103,14 @@ void xcc_stack_free(XCCStack *xs)
 {
     if (xs) {
         while (xs->depth) {
+            void *e;
             xs->depth--;
-            /* xcc_free(xs->entries[xs->depth]); */
+            e = xs->entries[xs->depth];
+            if (e && xs->data_free) {
+                xs->data_free(e);
+            }
         }
+        xcc_free(xs->entries);
         
         xcc_free(xs);
     }
@@ -133,8 +139,12 @@ int xcc_stack_decrement(XCCStack *xs)
     if (xs->depth < 1) {
         return XCC_RETURN_FAILURE;
     } else {
-        /* xcc_free(xs->entries[xs->depth - 1]); */
+        void *e;
         xs->depth--;
+        e = xs->entries[xs->depth];
+        if (e && xs->data_free) {
+            xs->data_free(e);
+        }
         
         return XCC_RETURN_SUCCESS;
     }
@@ -197,6 +207,7 @@ void xcc_string_free(XCCString *xstr)
             xstr->length = 0;
             xstr->s = NULL;
         }
+        xcc_free(xstr);
     }
 }
 
@@ -211,15 +222,27 @@ int xcc_string_set(XCCString *xstr, const char *s)
     return XCC_RETURN_SUCCESS;
 }
 
-XCC *xcc_new(void)
+XCC *xcc_xcc_new(void)
 {
     XCC *xcc;
     xcc = xcc_malloc(sizeof(XCC));
     memset(xcc, 0, sizeof(XCC));
-    xcc->a_types = xcc_stack_new();
-    xcc->e_types = xcc_stack_new();
-    xcc->elements = xcc_stack_new();
+    xcc->a_types = xcc_stack_new((XCC_stack_data_free) atype_free);
+    xcc->e_types = xcc_stack_new((XCC_stack_data_free) etype_free);
+    xcc->elements = xcc_stack_new((XCC_stack_data_free) element_free);
     return xcc;
+}
+
+void xcc_xcc_free(XCC *xcc)
+{
+    if (xcc) {
+        xcc_stack_free(xcc->a_types);
+        xcc_stack_free(xcc->e_types);
+        xcc_stack_free(xcc->elements);
+        xcc_string_free(xcc->preamble);
+        xcc_string_free(xcc->postamble);
+        xcc_free(xcc);
+    }
 }
 
 AType *atype_new(void)
@@ -230,6 +253,16 @@ AType *atype_new(void)
     return atype;
 }
 
+void atype_free(AType *atype)
+{
+    if (atype) {
+        xcc_free(atype->name);
+        xcc_free(atype->ctype);
+        xcc_free(atype->ccode);
+        xcc_free(atype);
+    }
+}
+
 EType *etype_new(void)
 {
     EType *etype;
@@ -238,15 +271,36 @@ EType *etype_new(void)
     return etype;
 }
 
+void etype_free(EType *etype)
+{
+    if (etype) {
+        xcc_free(etype->name);
+        xcc_free(etype->ctype);
+        xcc_free(etype->ccode);
+        xcc_free(etype);
+    }
+}
+
 Element *element_new(void)
 {
     Element *e;
     e = xcc_malloc(sizeof(Element));
     memset(e, 0, sizeof(Element));
-    e->attributes = xcc_stack_new();
-    e->children   = xcc_stack_new();
+    e->attributes = xcc_stack_new((XCC_stack_data_free) attribute_free);
+    e->children   = xcc_stack_new((XCC_stack_data_free) child_free);
     e->data       = xcc_string_new();
     return e;
+}
+
+void element_free(Element *e)
+{
+    if (e) {
+        xcc_free(e->name);
+        xcc_stack_free(e->attributes);
+        xcc_stack_free(e->children);
+        xcc_string_free(e->data);
+        xcc_free(e);
+    }
 }
 
 Attribute *attribute_new(void)
@@ -257,6 +311,15 @@ Attribute *attribute_new(void)
     return a;
 }
 
+void attribute_free(Attribute *a)
+{
+    if (a) {
+        xcc_free(a->name);
+        xcc_free(a->ccode);
+        xcc_free(a);
+    }
+}
+
 Child *child_new(void)
 {
     Child *c;
@@ -265,12 +328,29 @@ Child *child_new(void)
     return c;
 }
 
+void child_free(Child *c)
+{
+    if (c) {
+        xcc_free(c->name);
+        xcc_free(c->ccode);
+        xcc_free(c);
+    }
+}
+
 Node *node_new(void)
 {
     Node *n;
     n = xcc_malloc(sizeof(Node));
     memset(n, 0, sizeof(Node));
     return n;
+}
+
+void node_free(Node *n)
+{
+    if (n) {
+        xcc_free(n->name);
+        xcc_free(n);
+    }
 }
 
 AType *get_atype_by_name(XCCStack *a_types, const char *name)
@@ -655,7 +735,7 @@ int output_end_handler(const XCCStack *elements)
     printf("    xcc_stack_decrement(pdata->nodes);\n");
 
     printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
-    printf("        pdata->root = node->data;\n");
+    printf("        pdata->root = element.unicast;\n");
     printf("        parent_id  = 0;\n");
     printf("        pelement.unicast = NULL;\n");
     printf("    } else {\n");
@@ -764,7 +844,7 @@ int xcc_parse(FILE *fp, void *udata, void **root,
     pdata.cbufsize = 0;
     pdata.cbuflen  = 0;
  
-    pdata.nodes    = xcc_stack_new();
+    pdata.nodes    = xcc_stack_new((XCC_stack_data_free) node_free);
     pdata.root     = NULL;
     
     pdata.udata    = udata;
@@ -801,7 +881,10 @@ int xcc_parse(FILE *fp, void *udata, void **root,
         }
     }
     
+    /* Free allocated storage */
+    XML_ParserFree(xp);
     xcc_stack_free(pdata.nodes);
+    xcc_free(pdata.cbuffer);
     
     *root = pdata.root;
     if (!pdata.error) {

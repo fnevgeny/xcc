@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000 Evgeny Stambulchik
+ * Copyright (c) 2000-2002 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -251,11 +251,11 @@ int main(void) {
     pdata.cbufsize = 0;
     pdata.cbuflen  = 0;
  
-    pdata.a_types   = xcc_stack_new();
-    pdata.e_types   = xcc_stack_new();
+    pdata.a_types   = xcc_stack_new(NULL);
+    pdata.e_types   = xcc_stack_new(NULL);
     pdata.preamble  = xcc_string_new();
     pdata.postamble = xcc_string_new();
-    pdata.elements  = xcc_stack_new();
+    pdata.elements  = xcc_stack_new(NULL);
     
     XML_SetUserData(xp, (void *) &pdata);
 

@@ -14,7 +14,7 @@
 
     <!-- Element types -->
     <element-type name="xcc" ctype="XCC *">
-        $$ = xcc_new();
+        $$ = xcc_xcc_new();
     </element-type>
     <element-type name="string" ctype="XCCString *">
         $$ = xcc_string_new();
@@ -104,7 +104,8 @@
             xcc_stack_increment($$->children, $?);
         </child>
         <child name="data">
-            $$->data = $?;
+            xcc_string_set($$->data, $?->s);
+            xcc_string_free($?);
         </child>
     </element>
     <element name="postamble" type="string">
@@ -172,6 +173,9 @@ int main(void)
     output_end_handler(xcc->elements);
 
     output_postamble(xcc->postamble);
+    
+    /* free allocated storage */
+    xcc_xcc_free(xcc);
 
     exit(0);
 }
