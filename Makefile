@@ -62,6 +62,9 @@ check: b2xcc.c xcc.c
 	@diff -q b2xcc.c xcc.c
 	@if test $$? -ne 0; then echo "Failed"; else echo "OK"; fi
 
+tags: bxcc.c xcc.h xccP.h libexe.c libxcc.c
+	ctags bxcc.c xcc.h xccP.h libexe.c libxcc.c
+
 # Deps
 libxcc.o: xccP.h xcc.h
 libexe.o: xccP.h xcc.h
