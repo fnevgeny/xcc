@@ -1,0 +1,25 @@
+<books version="1.0" xmlns="http://www.example.com/books/v1">
+ <book publisher="IDG books">
+   <title>XML Bible</title>
+   <author>Elliotte Rusty Harold</author>
+ </book>
+ <book publisher="Addison-Wesley">
+   <title>The Mythical Man Month</title>
+   <author>Frederick Brooks</author>
+ </book>
+ <book publisher="WROX">
+   <title>Professional XSLT 2nd Edition</title>
+   <author>Michael Kay</author>
+   <price>
+     24.99
+   </price>
+ </book>
+ <book publisher="DIY Press">
+   <title>XCC: XML Compiler-Compiler</title>
+   <author>Evgeny Stambulchik</author>
+   <author>Your Name</author>
+   <price>
+     00.01
+   </price>
+ </book>
+</books>

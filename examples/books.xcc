@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<parser ns="http://www.example.com/books/v1">
+    <!-- Preamble -->
+    <preamble><![CDATA[
+#include <stdlib.h>
+#include <string.h>
+#include "books.h"
+    ]]></preamble>
+
+    <!-- Attribute types -->
+    <attribute-type name="sval" ctype="char *">
+        $$ = strdup($?);
+    </attribute-type>
+
+    <!-- Element types -->
+    <element-type name="books" ctype="Books *">
+        $$ = books_new();
+    </element-type>
+    <element-type name="book" ctype="Book *">
+        $$ = book_new();
+    </element-type>
+    <element-type name="string" ctype="char **">
+        $$ = malloc(sizeof(char *));
+    </element-type>
+    <element-type name="fval" ctype="float *">
+        $$ = malloc(sizeof(float));
+    </element-type>
+
+    <!-- Elements -->
+    <element name="books" type="books">
+        <!-- Attributes -->
+        <attribute name="version" type="sval">
+            $$->version = $?;
+        </attribute>
+        <child name="book">
+            books_add_book($$, $?);
+        </child>
+    </element>
+    <element name="book" type="book">
+        <!-- Attributes -->
+        <attribute name="publisher" type="sval">
+            $$->publisher = $?;
+        </attribute>
+        <!-- Child elements -->
+        <child name="title">
+            $$->title = *$?;
+            free($?);
+        </child>
+        <child name="author">
+            book_add_author($$, $?);
+            free($?);
+        </child>
+        <child name="price">
+            $$->price = *$?;
+            free($?);
+        </child>
+    </element>
+    <element name="title" type="string">
+        <!-- Character data -->
+        <data>
+            *$$ = strdup($?);
+        </data>
+    </element>
+    <element name="author" type="string">
+        <!-- Character data -->
+        <data>
+            *$$ = strdup($?);
+        </data>
+    </element>
+    <element name="price" type="fval">
+        <!-- Character data -->
+        <data>
+            *$$ = atof($?);
+        </data>
+    </element>
+
+    <!-- Postamble -->
+    <postamble><![CDATA[
+int main(void)
+{
+    void  *p;
+    Books *books;
+    int   ret;
+    
+    ret = xcc_parse(stdin, NULL, &p, xcc_start_handler, xcc_end_handler);
+    books = p;
+    
+    if (ret == XCC_RETURN_SUCCESS && books) {
+        unsigned i;
+        printf("-= Books Database version %s =-\n", books->version);
+        for (i = 0; i < books->nbooks; i++) {
+            book_info(books->books[i]);
+        }
+        
+        /* free allocated memory */
+        books_free(books);
+
+        exit(0);
+    } else {
+        exit(1);
+    }
+}
+    ]]></postamble>
+</parser>
