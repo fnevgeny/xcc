@@ -634,6 +634,10 @@ int output_end_handler(const XCCStack *elements, FILE *fp)
             xcc_stack_get_data(e->children, j, &p);
             c = p;
             ce = get_element_by_name(elements, c->name);
+            if (!ce) {
+                xcc_error("couldn't find definition for element %s", c->name);
+                return XCC_RETURN_FAILURE;
+            }
             sprintf(ebuf, "element.%s", ce->etype->name);
             fprintf(fp, "    case %d:\n", n_elements*parent_id + ce->id);
             fprintf(fp, "        {\n");

@@ -184,9 +184,14 @@ int main(int argc, char * const argv[])
     /* sort elements */
     output_element_tab(xcc->elements, xopts.ofp);
 
-    output_start_handler(xcc->elements, xcc->ns_uri, xopts.ofp);
+    if (output_start_handler(xcc->elements, xcc->ns_uri, xopts.ofp)
+        != XCC_RETURN_SUCCESS) {
+        exit(1);
+    }
     
-    output_end_handler(xcc->elements, xopts.ofp);
+    if (output_end_handler(xcc->elements, xopts.ofp) != XCC_RETURN_SUCCESS) {
+        exit(1);
+    }
 
     output_postamble(xcc->postamble, xopts.ofp);
     
