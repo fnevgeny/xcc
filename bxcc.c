@@ -243,15 +243,21 @@ static void char_data_handler(void *data, const XML_Char *s, int len)
     pdata->cbuflen = new_len;
 }
 
-int main(void) {
+int main(int argc, char * const argv[]) {
     XML_Parser xp;
     bParserData pdata;
     char Buff[BUFFSIZE];
+    XCCOpts xopts;
     
     xp = XML_ParserCreate(NULL);
     if (!xp) {
         fprintf(stderr, "Couldn't allocate memory for parser\n");
         exit(-1);
+    }
+
+    memset(&xopts, 0, sizeof(XCCOpts));
+    if (xcc_parse_opts(&xopts, argc, argv) != XCC_RETURN_SUCCESS) {
+        exit(1);
     }
 
     /* Set user data */
@@ -277,12 +283,12 @@ int main(void) {
         int done;
         int len;
 
-        len = fread(Buff, 1, BUFFSIZE, stdin);
-        if (ferror(stdin)) {
+        len = fread(Buff, 1, BUFFSIZE, xopts.ifp);
+        if (ferror(xopts.ifp)) {
             fprintf(stderr, "Read error\n");
             exit(1);
         }
-        done = feof(stdin);
+        done = feof(xopts.ifp);
 
         if (!XML_Parse(xp, Buff, len, done)) {
             fprintf(stderr, "Parse error at line %d:\n%s\n",
@@ -296,21 +302,21 @@ int main(void) {
         }
     }
     
-    output_header();
+    output_header(xopts.ofp);
     
-    output_preamble(pdata.preamble);
+    output_preamble(pdata.preamble, xopts.ofp);
     
-    output_atype_union(pdata.a_types);
-    output_etype_union(pdata.e_types);
+    output_atype_union(pdata.a_types, xopts.ofp);
+    output_etype_union(pdata.e_types, xopts.ofp);
 
     /* sort elements */
-    output_element_tab(pdata.elements);
+    output_element_tab(pdata.elements, xopts.ofp);
 
-    output_start_handler(pdata.elements, NULL);
+    output_start_handler(pdata.elements, NULL, xopts.ofp);
     
-    output_end_handler(pdata.elements);
+    output_end_handler(pdata.elements, xopts.ofp);
 
-    output_postamble(pdata.postamble);
+    output_postamble(pdata.postamble, xopts.ofp);
 
     exit(0);
 }

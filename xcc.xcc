@@ -150,38 +150,49 @@
 
     <!-- Postamble -->
     <postamble><![CDATA[
-int main(void)
+int main(int argc, char * const argv[])
 {
     XCC *xcc;
+    XCCOpts xopts;
     void *p;
 
-    if (xcc_parse(stdin, NULL, &p, xcc_start_handler, xcc_end_handler)
+    memset(&xopts, 0, sizeof(XCCOpts));
+    
+    if (xcc_parse_opts(&xopts, argc, argv) != XCC_RETURN_SUCCESS) {
+        exit(1);
+    }
+
+    if (xcc_parse(xopts.ifp, NULL, &p, xcc_start_handler, xcc_end_handler)
         != XCC_RETURN_SUCCESS) {
         xcc_error("Failed parsing input");
         exit(1);
     }
     
     xcc = p;
-
-    output_header();
     
-    output_preamble(xcc->preamble);
+    output_header(xopts.ofp);
+    
+    output_preamble(xcc->preamble, xopts.ofp);
 
-    output_atype_union(xcc->a_types);
-    output_etype_union(xcc->e_types);
+    output_atype_union(xcc->a_types, xopts.ofp);
+    output_etype_union(xcc->e_types, xopts.ofp);
 
     /* sort elements */
-    output_element_tab(xcc->elements);
+    output_element_tab(xcc->elements, xopts.ofp);
 
-    output_start_handler(xcc->elements, xcc->ns_uri);
+    output_start_handler(xcc->elements, xcc->ns_uri, xopts.ofp);
     
-    output_end_handler(xcc->elements);
+    output_end_handler(xcc->elements, xopts.ofp);
 
-    output_postamble(xcc->postamble);
+    output_postamble(xcc->postamble, xopts.ofp);
     
     /* free allocated storage */
     xcc_xcc_free(xcc);
 
+    /* close file streams */
+    fclose(xopts.ifp);
+    fclose(xopts.ofp);
+        
     exit(0);
 }
     ]]></postamble>

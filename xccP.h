@@ -43,6 +43,13 @@ typedef struct _XCC {
     char *ns_uri;
 } XCC;
 
+typedef struct {
+    char *ifile;
+    char *ofile;
+    FILE *ifp;
+    FILE *ofp;
+} XCCOpts;
+
 typedef void (*XCC_stack_data_free)(void *data); 
 
 struct _XCCStack {
@@ -117,13 +124,15 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 XCC *xcc_xcc_new(void);
 void xcc_xcc_free(XCC *xcc);
 
-int output_header(void);
-int output_preamble(const XCCString *pre);
-int output_postamble(const XCCString *post);
-int output_atype_union(const XCCStack *a_types);
-int output_etype_union(const XCCStack *e_types);
-int output_element_tab(const XCCStack *elements);
-int output_start_handler(const XCCStack *elements, const char *ns_uri);
-int output_end_handler(const XCCStack *elements);
+int output_header(FILE *fp);
+int output_preamble(const XCCString *pre, FILE *fp);
+int output_postamble(const XCCString *post, FILE *fp);
+int output_atype_union(const XCCStack *a_types, FILE *fp);
+int output_etype_union(const XCCStack *e_types, FILE *fp);
+int output_element_tab(const XCCStack *elements, FILE *fp);
+int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp);
+int output_end_handler(const XCCStack *elements, FILE *fp);
+
+int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[]);
 
 #endif /* __XCCP_H_ */

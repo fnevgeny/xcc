@@ -26,6 +26,7 @@
  */
 
 #include <string.h>
+#include <getopt.h>
 
 #include "xccP.h"
 
@@ -176,62 +177,62 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name)
     return NULL;
 }
 
-int output_header(void)
+int output_header(FILE *fp)
 {
-    printf("/* Produced by %s */\n\n", xcc_get_version_string());
-    printf("#include <xcc.h>\n");
+    fprintf(fp, "/* Produced by %s */\n\n", xcc_get_version_string());
+    fprintf(fp, "#include <xcc.h>\n");
     return XCC_RETURN_SUCCESS;
 }
 
-int output_preamble(const XCCString *pre)
+int output_preamble(const XCCString *pre, FILE *fp)
 {
     if (pre && pre->s) {
-        printf("%s\n", pre->s);
+        fprintf(fp, "%s\n", pre->s);
     }
     return XCC_RETURN_SUCCESS;
 }
 
-int output_postamble(const XCCString *post)
+int output_postamble(const XCCString *post, FILE *fp)
 {
     if (post && post->s) {
-        printf("%s\n", post->s);
+        fprintf(fp, "%s\n", post->s);
     }
     return XCC_RETURN_SUCCESS;
 }
 
-int output_atype_union(const XCCStack *a_types)
+int output_atype_union(const XCCStack *a_types, FILE *fp)
 {
     int i, n_atypes;
     
     n_atypes = xcc_stack_depth(a_types);
-    printf("typedef union {\n");
+    fprintf(fp, "typedef union {\n");
     for (i = 0; i < n_atypes; i++) {
         AType *atype;
         void *p;
         xcc_stack_get_data(a_types, i, &p);
         atype = p;
-        printf("    %s %s;\n", atype->ctype, atype->name);
+        fprintf(fp, "    %s %s;\n", atype->ctype, atype->name);
     }
-    printf("} XCCAType;\n\n");
+    fprintf(fp, "} XCCAType;\n\n");
     
     return XCC_RETURN_SUCCESS;
 }
 
-int output_etype_union(const XCCStack *e_types)
+int output_etype_union(const XCCStack *e_types, FILE *fp)
 {
     int i, n_etypes;
     
     n_etypes = xcc_stack_depth(e_types);
-    printf("typedef union {\n");
+    fprintf(fp, "typedef union {\n");
     for (i = 0; i < n_etypes; i++) {
         EType *etype;
         void *p;
         xcc_stack_get_data(e_types, i, &p);
         etype = p;
-        printf("    %s %s;\n", etype->ctype, etype->name);
+        fprintf(fp, "    %s %s;\n", etype->ctype, etype->name);
     }
-    printf("    void * unicast;\n");
-    printf("} XCCEType;\n\n");
+    fprintf(fp, "    void * unicast;\n");
+    fprintf(fp, "} XCCEType;\n\n");
     
     return XCC_RETURN_SUCCESS;
 }
@@ -320,12 +321,12 @@ static char *print_sharp_name(const char *name)
     return pname;
 }
 
-int output_element_tab(const XCCStack *elements)
+int output_element_tab(const XCCStack *elements, FILE *fp)
 {
     int i, n_elements;
     
     n_elements = xcc_stack_depth(elements);
-    printf("static XCCElementEntry XCCElementTab[] = {\n");
+    fprintf(fp, "static XCCElementEntry XCCElementTab[] = {\n");
     for (i = 0; i < n_elements; i++) {
         Element *e;
         char *pname;
@@ -334,76 +335,76 @@ int output_element_tab(const XCCStack *elements)
         e = p;
         e->id = i + 1;
         pname = print_sharp_name(e->name);
-        printf("    {%d, %s}%s\n", e->id, pname, i == n_elements - 1 ? "":",");
+        fprintf(fp, "    {%d, %s}%s\n", e->id, pname, i == n_elements - 1 ? "":",");
         xcc_free(pname);
     }
-    printf("};\n\n");
+    fprintf(fp, "};\n\n");
 
-    printf("static int get_element_id_by_name(const char *name)\n");
-    printf("{\n");
-    printf("    int i;\n");
-    printf("    for (i = 0; i < %d; i++) {\n", n_elements);
-    printf("        if (!strcmp(XCCElementTab[i].name, name)) {\n");
-    printf("            return XCCElementTab[i].key;\n");
-    printf("        }\n");
-    printf("    }\n");
-    printf("    return -1;\n");
-    printf("}\n\n");
+    fprintf(fp, "static int get_element_id_by_name(const char *name)\n");
+    fprintf(fp, "{\n");
+    fprintf(fp, "    int i;\n");
+    fprintf(fp, "    for (i = 0; i < %d; i++) {\n", n_elements);
+    fprintf(fp, "        if (!strcmp(XCCElementTab[i].name, name)) {\n");
+    fprintf(fp, "            return XCCElementTab[i].key;\n");
+    fprintf(fp, "        }\n");
+    fprintf(fp, "    }\n");
+    fprintf(fp, "    return -1;\n");
+    fprintf(fp, "}\n\n");
     
     return XCC_RETURN_SUCCESS;
 }
 
-int output_start_handler(const XCCStack *elements, const char *ns_uri)
+int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
 {
     int i, n_elements;
     char *pns_uri, *buf1, *buf2;
 
     n_elements = xcc_stack_depth(elements);
 
-    printf("void xcc_start_handler(void *data, const char *el, const char **attr)\n");  
-    printf("{\n");
-    printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
-    printf("    XCCNode *pnode = NULL, *node;\n");
-    printf("    XCCEType element;\n");
-    printf("    XCCAType attribute;\n");
-    printf("    int i, element_id, parent_id, parent_child, skip = 0;\n");
-    printf("    const char *avalue;\n");
-    printf("    char *aname, *el_local;\n");
-    printf("\n");
-    printf("    if (pdata->error) {\n");
-    printf("        return;\n");
-    printf("    }\n\n");
-    printf("    pdata->cbuflen = 0;\n");
-    printf("    if (pdata->cbufsize) {\n");
-    printf("        pdata->cbuffer[0] = '\\0';\n");
-    printf("    }\n");
+    fprintf(fp, "void xcc_start_handler(void *data, const char *el, const char **attr)\n");  
+    fprintf(fp, "{\n");
+    fprintf(fp, "    XCCParserData *pdata = (XCCParserData *) data;\n");
+    fprintf(fp, "    XCCNode *pnode = NULL, *node;\n");
+    fprintf(fp, "    XCCEType element;\n");
+    fprintf(fp, "    XCCAType attribute;\n");
+    fprintf(fp, "    int i, element_id, parent_id, parent_child, skip = 0;\n");
+    fprintf(fp, "    const char *avalue;\n");
+    fprintf(fp, "    char *aname, *el_local;\n");
+    fprintf(fp, "\n");
+    fprintf(fp, "    if (pdata->error) {\n");
+    fprintf(fp, "        return;\n");
+    fprintf(fp, "    }\n\n");
+    fprintf(fp, "    pdata->cbuflen = 0;\n");
+    fprintf(fp, "    if (pdata->cbufsize) {\n");
+    fprintf(fp, "        pdata->cbuffer[0] = '\\0';\n");
+    fprintf(fp, "    }\n");
 
     pns_uri = print_sharp_name(ns_uri);
-    printf("    el_local  = xcc_get_local(el, %s, &skip);\n", pns_uri);
-    printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
-    printf("        parent_id = 0;\n");
-    printf("    } else {\n");
-    printf("        void *p;\n");
-    printf("        xcc_stack_get_last(pdata->nodes, &p);\n");
-    printf("        pnode = p;\n");
-    printf("        parent_id = pnode->id;\n");
-    printf("    }\n");
-    printf("    if (parent_id < 0) {\n");
-    printf("        skip = 1;\n");
-    printf("    }\n");
-    printf("    if (skip) {\n");
-    printf("        element_id = -1;\n");
-    printf("    } else {\n");
-    printf("        element_id = get_element_id_by_name(el_local);\n");
-    printf("    }\n");
+    fprintf(fp, "    el_local  = xcc_get_local(el, %s, &skip);\n", pns_uri);
+    fprintf(fp, "    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
+    fprintf(fp, "        parent_id = 0;\n");
+    fprintf(fp, "    } else {\n");
+    fprintf(fp, "        void *p;\n");
+    fprintf(fp, "        xcc_stack_get_last(pdata->nodes, &p);\n");
+    fprintf(fp, "        pnode = p;\n");
+    fprintf(fp, "        parent_id = pnode->id;\n");
+    fprintf(fp, "    }\n");
+    fprintf(fp, "    if (parent_id < 0) {\n");
+    fprintf(fp, "        skip = 1;\n");
+    fprintf(fp, "    }\n");
+    fprintf(fp, "    if (skip) {\n");
+    fprintf(fp, "        element_id = -1;\n");
+    fprintf(fp, "    } else {\n");
+    fprintf(fp, "        element_id = get_element_id_by_name(el_local);\n");
+    fprintf(fp, "    }\n");
 
-    printf("    if (parent_id >= 0 && element_id >= 0) {\n");
-    printf("        parent_child = %d*parent_id + element_id;\n", n_elements);
-    printf("    } else {\n");
-    printf("        parent_child = -1;\n");
-    printf("    }\n\n");
-    printf("    switch (parent_child) {\n");
-    printf("    case 1:\n");
+    fprintf(fp, "    if (parent_id >= 0 && element_id >= 0) {\n");
+    fprintf(fp, "        parent_child = %d*parent_id + element_id;\n", n_elements);
+    fprintf(fp, "    } else {\n");
+    fprintf(fp, "        parent_child = -1;\n");
+    fprintf(fp, "    }\n\n");
+    fprintf(fp, "    switch (parent_child) {\n");
+    fprintf(fp, "    case 1:\n");
     
     for (i = 0; i < n_elements; i++) {
         Element *e;
@@ -420,20 +421,20 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
             xcc_stack_get_data(e->children, j, &p);
             c = p;
             element_id = get_element_id_by_name(elements, c->name);
-            printf("    case %d:\n", n_elements*parent_id + element_id);
+            fprintf(fp, "    case %d:\n", n_elements*parent_id + element_id);
         }
     }
     
-    printf("        break;\n");
-    printf("    default:\n");
-    printf("        if (!skip) {\n");
-    printf("            xcc_error(\"unexpected \\\"%%s\\\"->\\\"%%s\\\" combination\", pnode ? pnode->name:\"xml\", el_local);\n");
-    printf("            pdata->error = 1;\n");
-    printf("        }\n");
-    printf("        break;\n");
-    printf("    }\n\n");
+    fprintf(fp, "        break;\n");
+    fprintf(fp, "    default:\n");
+    fprintf(fp, "        if (!skip) {\n");
+    fprintf(fp, "            xcc_error(\"unexpected \\\"%%s\\\"->\\\"%%s\\\" combination\", pnode ? pnode->name:\"xml\", el_local);\n");
+    fprintf(fp, "            pdata->error = 1;\n");
+    fprintf(fp, "        }\n");
+    fprintf(fp, "        break;\n");
+    fprintf(fp, "    }\n\n");
 
-    printf("    switch (element_id) {\n");
+    fprintf(fp, "    switch (element_id) {\n");
     for (i = 0; i < n_elements; i++) {
         Element *e;
         void *p;
@@ -446,20 +447,20 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
 
         sprintf(ebuf, "element.%s", e->etype->name);
         
-        printf("    case %d: /* %s */\n", element_id, e->name);
+        fprintf(fp, "    case %d: /* %s */\n", element_id, e->name);
         buf1 = replace(e->etype->ccode, "$$", ebuf);
         buf2 = replace(buf1, "$U", "pdata->udata");
         xcc_free(buf1);
         buf1 = replace(buf2, "$P", "pnode->data");
         xcc_free(buf2);
-        printf("            %s\n", buf1);
+        fprintf(fp, "            %s\n", buf1);
         xcc_free(buf1);
         n_attributes = xcc_stack_depth(e->attributes);
-        printf("            for (i = 0; attr[i]; i += 2) {\n");
-        printf("                int askip = 0;\n");
-        printf("                aname  = xcc_get_local(attr[i], %s, &askip);\n",
+        fprintf(fp, "            for (i = 0; attr[i]; i += 2) {\n");
+        fprintf(fp, "                int askip = 0;\n");
+        fprintf(fp, "                aname  = xcc_get_local(attr[i], %s, &askip);\n",
             pns_uri);
-        printf("                avalue = attr[i + 1];\n");
+        fprintf(fp, "                avalue = attr[i + 1];\n");
         for (j = 0; j < n_attributes; j++) {
             Attribute *a;
             char *pname;
@@ -468,7 +469,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
             a = p;
 
             pname = print_sharp_name(a->name);
-            printf("                if (!strcmp(aname, %s)) {\n", pname);
+            fprintf(fp, "                if (!strcmp(aname, %s)) {\n", pname);
             xcc_free(pname);
             sprintf(abuf, "attribute.%s", a->atype->name);
             buf1 = replace(a->atype->ccode, "$$", abuf);
@@ -478,7 +479,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
             xcc_free(buf2);
             buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
             xcc_free(buf1);
-            printf("                    %s\n", buf2);
+            fprintf(fp, "                    %s\n", buf2);
             xcc_free(buf2);
             buf1 = replace(a->ccode, "$$", ebuf);
             buf2 = replace(buf1, "$?", abuf);
@@ -487,40 +488,40 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri)
             xcc_free(buf2);
             buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
             xcc_free(buf1);
-            printf("                {\n");
-            printf("                        %s\n", buf2);
-            printf("                }\n");
+            fprintf(fp, "                {\n");
+            fprintf(fp, "                        %s\n", buf2);
+            fprintf(fp, "                }\n");
             xcc_free(buf2);
-            printf("                } else\n");
+            fprintf(fp, "                } else\n");
         }
-        printf("                if (!askip) {\n");
-        printf("                    xcc_error(\"unknown attribute \\\"%%s\\\" of element \\\"%%s\\\"\", aname, el_local);\n");
-        printf("                }\n");
-        printf("                xcc_free(aname);\n");
-        printf("            }\n");
-        printf("        break;\n");
+        fprintf(fp, "                if (!askip) {\n");
+        fprintf(fp, "                    xcc_error(\"unknown attribute \\\"%%s\\\" of element \\\"%%s\\\"\", aname, el_local);\n");
+        fprintf(fp, "                }\n");
+        fprintf(fp, "                xcc_free(aname);\n");
+        fprintf(fp, "            }\n");
+        fprintf(fp, "        break;\n");
     }
 
     xcc_free(pns_uri);
 
-    printf("    default:\n");
-    printf("        element.unicast = NULL;\n");
-    printf("        if (!skip) {\n");
-    printf("            xcc_error(\"unknown element \\\"%%s\\\"\", el_local);\n");
-    printf("            pdata->error = 1;\n");
-    printf("        }\n");
-    printf("        break;\n");
-    printf("    }\n\n");
+    fprintf(fp, "    default:\n");
+    fprintf(fp, "        element.unicast = NULL;\n");
+    fprintf(fp, "        if (!skip) {\n");
+    fprintf(fp, "            xcc_error(\"unknown element \\\"%%s\\\"\", el_local);\n");
+    fprintf(fp, "            pdata->error = 1;\n");
+    fprintf(fp, "        }\n");
+    fprintf(fp, "        break;\n");
+    fprintf(fp, "    }\n\n");
 
     
-    printf("    node = xcc_node_new();\n");
-    printf("    node->name = el_local;\n");
-    printf("    node->id = element_id;\n");
-    printf("    node->data = element.unicast;\n");
+    fprintf(fp, "    node = xcc_node_new();\n");
+    fprintf(fp, "    node->name = el_local;\n");
+    fprintf(fp, "    node->id = element_id;\n");
+    fprintf(fp, "    node->data = element.unicast;\n");
     
-    printf("    xcc_stack_increment(pdata->nodes, node);\n");
+    fprintf(fp, "    xcc_stack_increment(pdata->nodes, node);\n");
     
-    printf("}\n\n");
+    fprintf(fp, "}\n\n");
     
     return XCC_RETURN_SUCCESS;
 }
@@ -543,7 +544,7 @@ static Element *get_element_by_name(const XCCStack *elements, const char *name)
 }
 
 
-int output_end_handler(const XCCStack *elements)
+int output_end_handler(const XCCStack *elements, FILE *fp)
 {
     int i, n_elements;
     char *buf1, *buf2;
@@ -551,24 +552,24 @@ int output_end_handler(const XCCStack *elements)
 
     n_elements = xcc_stack_depth(elements);
 
-    printf("void xcc_end_handler(void *data, const char *el)\n");  
-    printf("{\n");
-    printf("    XCCParserData *pdata = (XCCParserData *) data;\n");
-    printf("    XCCNode *node, *pnode;\n");
-    printf("    void *p;\n");
-    printf("    int element_id, parent_id, parent_child, skip = 0;\n");
+    fprintf(fp, "void xcc_end_handler(void *data, const char *el)\n");  
+    fprintf(fp, "{\n");
+    fprintf(fp, "    XCCParserData *pdata = (XCCParserData *) data;\n");
+    fprintf(fp, "    XCCNode *node, *pnode;\n");
+    fprintf(fp, "    void *p;\n");
+    fprintf(fp, "    int element_id, parent_id, parent_child, skip = 0;\n");
 
-    printf("    XCCEType element, pelement;\n");
-    printf("    char *cdata = pdata->cbuffer;\n\n");
-    printf("    if (pdata->error) {\n");
-    printf("        return;\n");
-    printf("    }\n\n");
-    printf("    xcc_stack_get_last(pdata->nodes, &p);\n");
-    printf("    node = p;\n");
-    printf("    element_id = node->id;\n");
-    printf("    element.unicast = node->data;\n");
+    fprintf(fp, "    XCCEType element, pelement;\n");
+    fprintf(fp, "    char *cdata = pdata->cbuffer;\n\n");
+    fprintf(fp, "    if (pdata->error) {\n");
+    fprintf(fp, "        return;\n");
+    fprintf(fp, "    }\n\n");
+    fprintf(fp, "    xcc_stack_get_last(pdata->nodes, &p);\n");
+    fprintf(fp, "    node = p;\n");
+    fprintf(fp, "    element_id = node->id;\n");
+    fprintf(fp, "    element.unicast = node->data;\n");
 
-    printf("    switch (element_id) {\n");
+    fprintf(fp, "    switch (element_id) {\n");
     for (i = 0; i < n_elements; i++) {
         Element *e;
         void *p;
@@ -579,42 +580,42 @@ int output_end_handler(const XCCStack *elements)
         if (e->data->s != NULL) {
             sprintf(ebuf, "element.%s", e->etype->name);
             element_id  = e->id;
-            printf("    case %d:\n", element_id);
-            printf("        {\n");
+            fprintf(fp, "    case %d:\n", element_id);
+            fprintf(fp, "        {\n");
             buf1 = replace(e->data->s, "$$", ebuf);
             buf2 = replace(buf1, "$?", "cdata");
-            printf("            %s\n", buf2);
+            fprintf(fp, "            %s\n", buf2);
             xcc_free(buf1);
             xcc_free(buf2);
-            printf("        }\n");
-            printf("        break;\n");
+            fprintf(fp, "        }\n");
+            fprintf(fp, "        break;\n");
         }
     }
         
-    printf("    }\n\n");
+    fprintf(fp, "    }\n\n");
 
-    printf("    xcc_stack_decrement(pdata->nodes);\n");
+    fprintf(fp, "    xcc_stack_decrement(pdata->nodes);\n");
 
-    printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
-    printf("        pdata->root = element.unicast;\n");
-    printf("        parent_id  = 0;\n");
-    printf("        pelement.unicast = NULL;\n");
-    printf("    } else {\n");
-    printf("        xcc_stack_get_last(pdata->nodes, &p);\n");
-    printf("        pnode = p;\n");
-    printf("        parent_id  = pnode->id;\n");
-    printf("        pelement.unicast = pnode->data;\n");
-    printf("    }\n");
+    fprintf(fp, "    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
+    fprintf(fp, "        pdata->root = element.unicast;\n");
+    fprintf(fp, "        parent_id  = 0;\n");
+    fprintf(fp, "        pelement.unicast = NULL;\n");
+    fprintf(fp, "    } else {\n");
+    fprintf(fp, "        xcc_stack_get_last(pdata->nodes, &p);\n");
+    fprintf(fp, "        pnode = p;\n");
+    fprintf(fp, "        parent_id  = pnode->id;\n");
+    fprintf(fp, "        pelement.unicast = pnode->data;\n");
+    fprintf(fp, "    }\n");
 
-    printf("    if (parent_id >= 0 && element_id >= 0) {\n");
-    printf("        parent_child = %d*parent_id + element_id;\n", n_elements);
-    printf("    } else {\n");
-    printf("        parent_child = -1;\n");
-    printf("        skip = 1;\n");
-    printf("    }\n\n");
-    printf("    switch (parent_child) {\n");
-    printf("    case 1:\n");
-    printf("        break;\n");
+    fprintf(fp, "    if (parent_id >= 0 && element_id >= 0) {\n");
+    fprintf(fp, "        parent_child = %d*parent_id + element_id;\n", n_elements);
+    fprintf(fp, "    } else {\n");
+    fprintf(fp, "        parent_child = -1;\n");
+    fprintf(fp, "        skip = 1;\n");
+    fprintf(fp, "    }\n\n");
+    fprintf(fp, "    switch (parent_child) {\n");
+    fprintf(fp, "    case 1:\n");
+    fprintf(fp, "        break;\n");
     
     for (i = 0; i < n_elements; i++) {
         Element *e;
@@ -633,8 +634,8 @@ int output_end_handler(const XCCStack *elements)
             c = p;
             ce = get_element_by_name(elements, c->name);
             sprintf(ebuf, "element.%s", ce->etype->name);
-            printf("    case %d:\n", n_elements*parent_id + ce->id);
-            printf("        {\n");
+            fprintf(fp, "    case %d:\n", n_elements*parent_id + ce->id);
+            fprintf(fp, "        {\n");
             buf1 = replace(c->ccode, "$$", pbuf);
             buf2 = replace(buf1, "$?", ebuf);
             xcc_free(buf1);
@@ -642,27 +643,81 @@ int output_end_handler(const XCCStack *elements)
             xcc_free(buf2);
             buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
             xcc_free(buf1);
-            printf("        %s\n", buf2);
+            fprintf(fp, "        %s\n", buf2);
             xcc_free(buf2);
-            printf("        }\n");
-            printf("        break;\n");
+            fprintf(fp, "        }\n");
+            fprintf(fp, "        break;\n");
         }
     }
 
-    printf("    default:\n");
-    printf("        if (!skip) {\n");
-    printf("            xcc_error(\"internal error\");\n");
-    printf("            pdata->error = 1;\n");
-    printf("        }\n");
-    printf("        break;\n");
-    printf("    }\n\n");
+    fprintf(fp, "    default:\n");
+    fprintf(fp, "        if (!skip) {\n");
+    fprintf(fp, "            xcc_error(\"internal error\");\n");
+    fprintf(fp, "            pdata->error = 1;\n");
+    fprintf(fp, "        }\n");
+    fprintf(fp, "        break;\n");
+    fprintf(fp, "    }\n\n");
 
-    printf("    pdata->cbuflen = 0;\n");
-    printf("    if (pdata->cbufsize) {\n");
-    printf("        pdata->cbuffer[0] = '\\0';\n");
-    printf("    }\n");
-    printf("}\n");
+    fprintf(fp, "    pdata->cbuflen = 0;\n");
+    fprintf(fp, "    if (pdata->cbufsize) {\n");
+    fprintf(fp, "        pdata->cbuffer[0] = '\\0';\n");
+    fprintf(fp, "    }\n");
+    fprintf(fp, "}\n");
     
     return XCC_RETURN_SUCCESS;
 }
 
+static void usage(const char *arg0, FILE *fp)
+{
+    fprintf(fp, "Usage: %s [options]\n", arg0);
+    fprintf(fp, "Available options:\n");
+    fprintf(fp, "  -i <file>  input file [stdin]\n");
+    fprintf(fp, "  -o <file>  output file [stdout]\n");
+    fprintf(fp, "  -h         print this help\n");
+}
+
+int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
+{
+    int opt;
+
+    while ((opt = getopt(argc, argv, "i:o:h")) != -1) {
+        switch (opt) {
+        case 'i':
+            xopts->ifile = optarg;
+            break;
+        case 'o':
+            xopts->ofile = optarg;
+            break;
+        case 'h':
+            usage(argv[0], stdout);
+            exit(0);
+            break;
+        default:
+            usage(argv[0], stderr);
+            return XCC_RETURN_FAILURE;
+            break;
+        }
+    }
+
+    if (!xopts->ifile) {
+        xopts->ifp = stdin;
+    } else {
+        xopts->ifp = fopen(xopts->ifile, "r");
+    }
+    if (!xopts->ifp) {
+        fprintf(stderr, "Can't open input stream\n");
+        return XCC_RETURN_FAILURE;
+    }
+    
+    if (!xopts->ofile) {
+        xopts->ofp = stdout;
+    } else {
+        xopts->ofp = fopen(xopts->ofile, "wb");
+    }
+    if (!xopts->ofp) {
+        fprintf(stderr, "Can't open output stream\n");
+        exit(1);
+    }
+    
+    return XCC_RETURN_SUCCESS;
+}

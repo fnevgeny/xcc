@@ -19,8 +19,6 @@ LOBJS  = libxcc.o
 
 XCCLIB = libxcc.a	
 
-TMP_C = t.c
-
 all: $(PROG)
 
 $(XCCLIB): $(LOBJS)
@@ -34,14 +32,14 @@ $(PROG): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(XCCLIB) $(LIBS)
 
 b2xcc.c: $(XCC_XCC) $(BPROG)
-	./$(BPROG) < $(XCC_XCC) > $(TMP_C) && mv -f $(TMP_C) $@
+	./$(BPROG) -i $(XCC_XCC) -o $@
 xcc.c:  $(XCC_XCC) $(B2PROG)
-	./$(B2PROG) < $(XCC_XCC) > $(TMP_C) && mv -f $(TMP_C) $@
+	./$(B2PROG) -i $(XCC_XCC) -o $@
 
 clean:
 	rm -f $(BPROG) $(B2PROG) $(PROG) \
 	$(BOBJS) $(B2OBJS) $(OBJS) $(LOBJS) $(XCCLIB) \
-	xcc.c b2xcc.c $(TMP_C)
+	xcc.c b2xcc.c
 
 install: $(XCCLIB) $(PROG)
 	$(MKINSTALLDIRS) $(bindir)
