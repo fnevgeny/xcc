@@ -1,9 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Home page: http://plasma-gate.weizmann.ac.il/Grace/
- * 
- * Copyright (c) 2000 Evgeny Stambulchik
+ * Copyright (c) 2000,2001 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -60,7 +58,6 @@ void *xcc_malloc(size_t size)
             abort();
         }
     }
-    
 }
 
 char *xstrdup(const char *s)
@@ -474,6 +471,9 @@ int output_start_handler(const XCCStack *elements)
     printf("    const char *aname, *avalue;\n");
     printf("\n");
     printf("    pdata->cbuflen = 0;\n");
+    printf("    if (pdata->cbufsize) {\n");
+    printf("        pdata->cbuffer[0] = '\\0';\n");
+    printf("    }\n");
     printf("    element_id = get_element_id_by_name(el);\n");
     printf("    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
     printf("        parent_id  = 0;\n");
@@ -703,6 +703,9 @@ int output_end_handler(const XCCStack *elements)
     printf("    }\n\n");
 
     printf("    pdata->cbuflen = 0;\n");
+    printf("    if (pdata->cbufsize) {\n");
+    printf("        pdata->cbuffer[0] = '\\0';\n");
+    printf("    }\n");
     printf("}\n");
     
     return XCC_RETURN_SUCCESS;
@@ -747,11 +750,14 @@ int xcc_parse(FILE *fp, void *udata, void **root,
     
     xp = XML_ParserCreate(NULL);
     if (!xp) {
-        fprintf(stderr, "Couldn't allocate memory for parser\n");
+        *root = NULL;
+        xcc_error("Couldn't allocate memory for parser");
         return XCC_RETURN_FAILURE;
     }
 
     /* Set XML_Parser's user data */
+    pdata.error    = 0;
+    
     pdata.cbuffer  = NULL;
     pdata.cbufsize = 0;
     pdata.cbuflen  = 0;
@@ -768,14 +774,15 @@ int xcc_parse(FILE *fp, void *udata, void **root,
     /* Set the char data handler */
     XML_SetCharacterDataHandler(xp, xcc_char_data_handler);
 
-    for (;;) {
+    while (!pdata.error) {
         int done;
         int len;
 
         len = fread(Buff, 1, BUFFSIZE, fp);
         if (ferror(fp)) {
-            fprintf(stderr, "Read error\n");
-            exit(1);
+            xcc_error("Read error");
+            pdata.error = 1;
+            break;
         }
         done = feof(fp);
 
@@ -783,7 +790,8 @@ int xcc_parse(FILE *fp, void *udata, void **root,
             fprintf(stderr, "Parse error at line %d:\n%s\n",
 	            XML_GetCurrentLineNumber(xp),
 	            XML_ErrorString(XML_GetErrorCode(xp)));
-            return XCC_RETURN_FAILURE;
+            pdata.error = 1;
+            break;
         }
 
         if (done) {
@@ -792,5 +800,9 @@ int xcc_parse(FILE *fp, void *udata, void **root,
     }
     
     *root = pdata.root;
-    return XCC_RETURN_SUCCESS;
+    if (!pdata.error) {
+        return XCC_RETURN_SUCCESS;
+    } else {
+        return XCC_RETURN_FAILURE;
+    }
 }

@@ -1,9 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Home page: http://plasma-gate.weizmann.ac.il/Grace/
- * 
- * Copyright (c) 2000 Evgeny Stambulchik
+ * Copyright (c) 2000,2001 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -29,7 +27,7 @@
 #include <stdio.h>
 #include <expat.h>
 
-#define XCC_VERSION_STRING  "xcc-0.0.1"
+#define XCC_VERSION_STRING  "xcc-0.0.2"
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
@@ -137,6 +135,8 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 /* ------------------- */
 
 typedef struct _XCCParserData {
+    int error;
+    
     char *cbuffer;
     int cbufsize;
     int cbuflen;
