@@ -29,8 +29,12 @@
 #include <stdio.h>
 #include <expat.h>
 
+#define XCC_VERSION_STRING  "xcc-0.0.1"
+
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
+
+char *xcc_version_string(void);
 
 void xcc_free(void *p);
 void *xcc_malloc(size_t size);

@@ -30,6 +30,11 @@
 
 #include <xcc.h>
 
+char *xcc_version_string(void)
+{
+    return XCC_VERSION_STRING;
+}
+
 void xcc_error(char *msg)
 {
     fprintf(stderr, "xcc_error: %s\n", msg);
