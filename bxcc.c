@@ -1,8 +1,6 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Home page: http://plasma-gate.weizmann.ac.il/Grace/
- * 
  * Copyright (c) 2000 Evgeny Stambulchik
  * 
  * 
