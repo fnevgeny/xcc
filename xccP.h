@@ -63,6 +63,8 @@ typedef struct _Element {
     EType *etype;
     XCCStack *attributes;
     XCCStack *children;
+    EType *parent_etype;
+    int same_parents;
     XCCString *data;
     int id;
 } Element;

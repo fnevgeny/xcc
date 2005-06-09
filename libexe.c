@@ -98,6 +98,7 @@ Element *element_new(void)
     e->attributes = xcc_stack_new((XCC_stack_data_free) attribute_free);
     e->children   = xcc_stack_new((XCC_stack_data_free) child_free);
     e->data       = xcc_string_new();
+    e->same_parents = 1;
     return e;
 }
 
@@ -238,27 +239,6 @@ int output_etype_union(const XCCStack *e_types, FILE *fp)
     return XCC_RETURN_SUCCESS;
 }
 
-static int get_element_id_by_name(const XCCStack *elements, const char *name)
-{
-    int i, n_elements = xcc_stack_depth(elements);
-    
-    if (!name) {
-        return -1;
-    }
-    
-    for (i = 0; i < n_elements; i++) {
-        Element *e;
-        void *p;
-        xcc_stack_get_data(elements, i, &p);
-        e = p;
-        if (e && e->name && !strcmp(e->name, name)) {
-            return e->id;
-        }
-    }
-    
-    return -1;
-}
-
 static char *replace(const char *str, const char *f, const char *r)
 {
     int inlen, outlen, flen, rlen, diff;
@@ -360,6 +340,23 @@ int output_element_tab(const XCCStack *elements, FILE *fp)
     return XCC_RETURN_SUCCESS;
 }
 
+static Element *get_element_by_name(const XCCStack *elements, const char *name)
+{
+    int i, n_elements = xcc_stack_depth(elements);
+    for (i = 0; i < n_elements; i++) {
+        Element *e;
+        void *p;
+        xcc_stack_get_data(elements, i, &p);
+        e = p;
+        if (!strcmp(e->name, name)) {
+            return e;
+        }
+    }
+    
+    return NULL;
+}
+
+
 int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
 {
     int i, n_elements;
@@ -423,11 +420,23 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
         n_children = xcc_stack_depth(e->children);
         for (j = 0; j < n_children; j++) {
             Child *c;
-            int element_id;
+            Element *ce;
             xcc_stack_get_data(e->children, j, &p);
             c = p;
-            element_id = get_element_id_by_name(elements, c->name);
-            fprintf(fp, "    case %d:\n", n_elements*parent_id + element_id);
+            
+            /* check if this child have single parents' ctype */
+            ce = get_element_by_name(elements, c->name);
+            if (ce->same_parents) {
+                if (!ce->parent_etype) {
+                    ce->parent_etype = e->etype;
+                } else
+                if (ce->parent_etype != e->etype) {
+                    ce->same_parents = 0;
+                    ce->parent_etype = NULL;
+                }
+            }
+            
+            fprintf(fp, "    case %d:\n", n_elements*parent_id + ce->id);
         }
     }
     
@@ -462,7 +471,13 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
         buf1 = replace(e->etype->ccode, "$$", ebuf);
         buf2 = replace(buf1, "$U", "pdata->udata");
         xcc_free(buf1);
-        buf1 = replace(buf2, "$P", "pnode->data");
+        if (e->parent_etype) {
+            char buf[128];
+            sprintf(buf, "((%s) pnode->data)", e->parent_etype->ctype);
+            buf1 = replace(buf2, "$P", buf);
+        } else {
+            buf1 = replace(buf2, "$P", "pnode->data");
+        }
         xcc_free(buf2);
         fprintf(fp, "            %s\n", buf1);
         xcc_free(buf1);
@@ -535,23 +550,6 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
     fprintf(fp, "}\n\n");
     
     return XCC_RETURN_SUCCESS;
-}
-
-
-static Element *get_element_by_name(const XCCStack *elements, const char *name)
-{
-    int i, n_elements = xcc_stack_depth(elements);
-    for (i = 0; i < n_elements; i++) {
-        Element *e;
-        void *p;
-        xcc_stack_get_data(elements, i, &p);
-        e = p;
-        if (!strcmp(e->name, name)) {
-            return e;
-        }
-    }
-    
-    return NULL;
 }
 
 
