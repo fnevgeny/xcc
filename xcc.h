@@ -21,6 +21,12 @@
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* As a special exception, when this file is SOLELY used to provide the
+   functionality as needed by an XCC-generated output at run-time (either
+   copied by XCC into the output file or otherwise linked to), you may use
+   this file without further restrictions, provided that its contents are
+   preserved verbatim. */
+
 /* Public stuff */
 
 #ifndef __XCC_H_
