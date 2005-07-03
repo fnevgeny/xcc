@@ -1,0 +1,11 @@
+New with 0.3.4, released 2005-07-04:
+
+    * Added exception notice to the public XCC stuff, permitting
+      its use beyond the GPL terms.
+    * Detect whether a given element has all parents of the same C
+      type, and if yes, cast $P replacement automatically.
+
+
+New with 0.3.3, released 2005-03-13:
+
+    * First public release.
