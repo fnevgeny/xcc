@@ -312,9 +312,9 @@ int main(int argc, char * const argv[]) {
     /* sort elements */
     output_element_tab(pdata.elements, xopts.ofp);
 
-    output_start_handler(pdata.elements, NULL, xopts.ofp);
+    output_start_handler(pdata.elements, NULL, XCC_DEFAULT_PREFIX, xopts.ofp);
     
-    output_end_handler(pdata.elements, xopts.ofp);
+    output_end_handler(pdata.elements, XCC_DEFAULT_PREFIX, xopts.ofp);
 
     output_postamble(pdata.postamble, xopts.ofp);
 

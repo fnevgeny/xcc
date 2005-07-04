@@ -39,6 +39,9 @@
         <attribute name="ns" type="sval">
             $$->ns_uri = $?;
         </attribute>
+        <attribute name="basename" type="sval">
+            $$->prefix = $?;
+        </attribute>
         <!-- Child elements -->
         <child name="preamble">
             $$->preamble = $?;
@@ -176,6 +179,11 @@ int main(int argc, char * const argv[])
         output_header(xopts.ofp);
     }
     
+    /* if not defined, set default basename for handler functions */
+    if (!xcc->prefix) {
+        xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
+    }
+    
     output_preamble(xcc->preamble, xopts.ofp);
 
     output_atype_union(xcc->a_types, xopts.ofp);
@@ -184,12 +192,13 @@ int main(int argc, char * const argv[])
     /* sort elements */
     output_element_tab(xcc->elements, xopts.ofp);
 
-    if (output_start_handler(xcc->elements, xcc->ns_uri, xopts.ofp)
+    if (output_start_handler(xcc->elements, xcc->ns_uri, xcc->prefix, xopts.ofp)
         != XCC_RETURN_SUCCESS) {
         exit(1);
     }
     
-    if (output_end_handler(xcc->elements, xopts.ofp) != XCC_RETURN_SUCCESS) {
+    if (output_end_handler(xcc->elements, xcc->prefix, xopts.ofp)
+        != XCC_RETURN_SUCCESS) {
         exit(1);
     }
 

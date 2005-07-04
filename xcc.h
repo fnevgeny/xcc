@@ -50,6 +50,8 @@
 
 #define XCC_BUFFSIZE	    8192
 
+#define XCC_DEFAULT_PREFIX    "xcc"
+
 /* ------------------- */
 
 #define xcc_realloc realloc

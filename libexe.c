@@ -50,6 +50,8 @@ void xcc_xcc_free(XCC *xcc)
         xcc_stack_free(xcc->elements);
         xcc_string_free(xcc->preamble);
         xcc_string_free(xcc->postamble);
+        xcc_free(xcc->ns_uri);
+        xcc_free(xcc->prefix);
         xcc_free(xcc);
     }
 }
@@ -357,14 +359,16 @@ static Element *get_element_by_name(const XCCStack *elements, const char *name)
 }
 
 
-int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
+int output_start_handler(const XCCStack *elements,
+    const char *ns_uri, const char *bname, FILE *fp)
 {
     int i, n_elements;
     char *pns_uri, *buf1, *buf2;
 
     n_elements = xcc_stack_depth(elements);
 
-    fprintf(fp, "void xcc_start_handler(void *data, const char *el, const char **attr)\n");  
+    fprintf(fp, "void %s_start_handler(void *data, const char *el, const char **attr)\n",
+                bname);  
     fprintf(fp, "{\n");
     fprintf(fp, "    XCCParserData *pdata = (XCCParserData *) data;\n");
     fprintf(fp, "    XCCNode *pnode = NULL, *node;\n");
@@ -553,7 +557,7 @@ int output_start_handler(const XCCStack *elements, const char *ns_uri, FILE *fp)
 }
 
 
-int output_end_handler(const XCCStack *elements, FILE *fp)
+int output_end_handler(const XCCStack *elements, const char *bname, FILE *fp)
 {
     int i, n_elements;
     char *buf1, *buf2;
@@ -561,7 +565,7 @@ int output_end_handler(const XCCStack *elements, FILE *fp)
 
     n_elements = xcc_stack_depth(elements);
 
-    fprintf(fp, "void xcc_end_handler(void *data, const char *el)\n");  
+    fprintf(fp, "void %s_end_handler(void *data, const char *el)\n", bname);  
     fprintf(fp, "{\n");
     fprintf(fp, "    XCCParserData *pdata = (XCCParserData *) data;\n");
     fprintf(fp, "    XCCNode *node, *pnode;\n");
