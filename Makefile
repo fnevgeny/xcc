@@ -49,7 +49,7 @@ $(BUNDLE_I): xcc.h libxcc.c
 clean:
 	rm -f $(BPROG) $(PROG) \
 	$(BOBJS) $(OBJS) $(LOBJS) $(XCCLIB) \
-	xcc.c xcc_t.c $(BUNDLE_I) tags
+	xcc.c xcc_t.c $(BUNDLE_I) tags ChangeLog *~ *.bak
 
 install: $(XCCLIB) $(PROG)
 	$(MKINSTALLDIRS) $(bindir)
