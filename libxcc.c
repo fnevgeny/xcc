@@ -300,7 +300,7 @@ static void xcc_char_data_handler(void *data, const char *s, int len)
     pdata->cbuflen = new_len;
 }
 
-int xcc_parse(FILE *fp, void *udata, void **root,
+int xcc_run(FILE *fp, void *udata, void **root,
               XML_StartElementHandler start_element_handler,
               XML_EndElementHandler end_element_handler)
 {

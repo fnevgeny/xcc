@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<parser ns="http://www.example.com/books/v1">
+<parser ns="http://www.example.com/books/v1" prefix="books">
     <!-- Preamble -->
     <preamble><![CDATA[
 #include <stdlib.h>
@@ -82,7 +82,7 @@ int main(void)
     Books *books;
     int   ret;
     
-    ret = xcc_parse(stdin, NULL, &p, xcc_start_handler, xcc_end_handler);
+    ret = books_parse(stdin, NULL, &p);
     books = p;
     
     if (ret == XCC_RETURN_SUCCESS && books) {

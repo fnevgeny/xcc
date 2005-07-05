@@ -123,6 +123,7 @@ int output_element_tab(const XCCStack *elements, FILE *fp);
 int output_start_handler(const XCCStack *elements,
     const char *ns_uri, const char *prefix, FILE *fp);
 int output_end_handler(const XCCStack *elements, const char *prefix, FILE *fp);
+int output_parser(const char *prefix, FILE *fp);
 
 int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[]);
 

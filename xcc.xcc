@@ -39,7 +39,7 @@
         <attribute name="ns" type="sval">
             $$->ns_uri = $?;
         </attribute>
-        <attribute name="basename" type="sval">
+        <attribute name="prefix" type="sval">
             $$->prefix = $?;
         </attribute>
         <!-- Child elements -->
@@ -165,8 +165,7 @@ int main(int argc, char * const argv[])
         exit(1);
     }
 
-    if (xcc_parse(xopts.ifp, NULL, &p, xcc_start_handler, xcc_end_handler)
-        != XCC_RETURN_SUCCESS) {
+    if (xcc_parse(xopts.ifp, NULL, &p) != XCC_RETURN_SUCCESS) {
         xcc_error("Failed parsing input");
         exit(1);
     }
@@ -201,6 +200,8 @@ int main(int argc, char * const argv[])
         != XCC_RETURN_SUCCESS) {
         exit(1);
     }
+
+    output_parser(xcc->prefix, xopts.ofp);
 
     output_postamble(xcc->postamble, xopts.ofp);
     

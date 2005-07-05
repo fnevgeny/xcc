@@ -316,6 +316,8 @@ int main(int argc, char * const argv[]) {
     
     output_end_handler(pdata.elements, XCC_DEFAULT_PREFIX, xopts.ofp);
 
+    output_parser(XCC_DEFAULT_PREFIX, xopts.ofp);
+
     output_postamble(pdata.postamble, xopts.ofp);
 
     exit(0);

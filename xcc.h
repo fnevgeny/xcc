@@ -116,7 +116,7 @@ char *xcc_get_local(const char *name, const char *ns_uri, int *skip);
 
 void *xcc_get_root(XCCParserData *pdata);
 
-int xcc_parse(FILE *fp, void *udata, void **root,
+int xcc_run(FILE *fp, void *udata, void **root,
               XML_StartElementHandler start_element_handler,
               XML_EndElementHandler end_element_handler);
 
