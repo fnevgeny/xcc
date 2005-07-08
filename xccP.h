@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2004 Evgeny Stambulchik
+ * Copyright (c) 2000-2005 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -113,17 +113,7 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 XCC *xcc_xcc_new(void);
 void xcc_xcc_free(XCC *xcc);
 
-int output_header(FILE *fp);
-int output_bundle(FILE *fp);
-int output_preamble(const XCCString *pre, FILE *fp);
-int output_postamble(const XCCString *post, FILE *fp);
-int output_atype_union(const XCCStack *a_types, FILE *fp);
-int output_etype_union(const XCCStack *e_types, FILE *fp);
-int output_element_tab(const XCCStack *elements, FILE *fp);
-int output_start_handler(const XCCStack *elements,
-    const char *ns_uri, const char *prefix, FILE *fp);
-int output_end_handler(const XCCStack *elements, const char *prefix, FILE *fp);
-int output_parser(const char *prefix, FILE *fp);
+int xcc_output_all(const XCC *xcc, FILE *fp, int bundle);
 
 int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[]);
 

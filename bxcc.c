@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2002 Evgeny Stambulchik
+ * Copyright (c) 2000-2005 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -32,15 +32,11 @@
 #include "xccP.h"
 
 typedef struct _bParserData {
+    XCC *xcc;
+    
     char *cbuffer;
     int cbufsize;
     int cbuflen;
-    
-    XCCStack *a_types;
-    XCCStack *e_types;
-    XCCString *preamble;
-    XCCString *postamble;
-    XCCStack *elements;
 } bParserData;
 
 
@@ -141,23 +137,23 @@ static void start(void *data, const char *el, const char **attr) {
         ;
     } else
     if (!strcmp(el, "attribute-type")) {
-        register_attribute_type(pdata->a_types, attr);
+        register_attribute_type(pdata->xcc->a_types, attr);
     } else
     if (!strcmp(el, "element-type")) {
-        register_element_type(pdata->e_types, attr);
+        register_element_type(pdata->xcc->e_types, attr);
     } else
     if (!strcmp(el, "element")) {
-        register_element(pdata->elements, pdata->e_types, attr);
+        register_element(pdata->xcc->elements, pdata->xcc->e_types, attr);
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
-        xcc_stack_get_last(pdata->elements, &p);
+        xcc_stack_get_last(pdata->xcc->elements, &p);
         e = p;
-        register_element_attribute(e, pdata->a_types, attr);
+        register_element_attribute(e, pdata->xcc->a_types, attr);
     } else
     if (!strcmp(el, "child")) {
         Element *e;
-        xcc_stack_get_last(pdata->elements, &p);
+        xcc_stack_get_last(pdata->xcc->elements, &p);
         e = p;
         register_element_child(e, attr);
     } else
@@ -182,20 +178,20 @@ static void end(void *data, const char *el) {
     
     if (!strcmp(el, "attribute-type")) {
         AType *atype;
-        xcc_stack_get_last(pdata->a_types, &p);
+        xcc_stack_get_last(pdata->xcc->a_types, &p);
         atype = p;
         atype->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "element-type")) {
         EType *etype;
-        xcc_stack_get_last(pdata->e_types, &p);
+        xcc_stack_get_last(pdata->xcc->e_types, &p);
         etype = p;
         etype->ccode = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
         Attribute *a;
-        xcc_stack_get_last(pdata->elements, &p);
+        xcc_stack_get_last(pdata->xcc->elements, &p);
         e = p;
         xcc_stack_get_last(e->attributes, &p);
         a = p;
@@ -204,7 +200,7 @@ static void end(void *data, const char *el) {
     if (!strcmp(el, "child")) {
         Element *e;
         Child *c;
-        xcc_stack_get_last(pdata->elements, &p);
+        xcc_stack_get_last(pdata->xcc->elements, &p);
         e = p;
         xcc_stack_get_last(e->children, &p);
         c = p;
@@ -212,15 +208,15 @@ static void end(void *data, const char *el) {
     } else
     if (!strcmp(el, "data")) {
         Element *e;
-        xcc_stack_get_last(pdata->elements, &p);
+        xcc_stack_get_last(pdata->xcc->elements, &p);
         e = p;
         xcc_string_set(e->data, pdata->cbuffer);
     } else
     if (!strcmp(el, "preamble")) {
-        xcc_string_set(pdata->preamble, pdata->cbuffer);
+        xcc_string_set(pdata->xcc->preamble, pdata->cbuffer);
     } else
     if (!strcmp(el, "postamble")) {
-        xcc_string_set(pdata->postamble, pdata->cbuffer);
+        xcc_string_set(pdata->xcc->postamble, pdata->cbuffer);
     }
     
     pdata->cbuflen = 0;
@@ -261,16 +257,12 @@ int main(int argc, char * const argv[]) {
     }
 
     /* Set user data */
+    pdata.xcc      = xcc_xcc_new();
+    
     pdata.cbuffer  = NULL;
     pdata.cbufsize = 0;
     pdata.cbuflen  = 0;
  
-    pdata.a_types   = xcc_stack_new(NULL);
-    pdata.e_types   = xcc_stack_new(NULL);
-    pdata.preamble  = xcc_string_new();
-    pdata.postamble = xcc_string_new();
-    pdata.elements  = xcc_stack_new(NULL);
-    
     XML_SetUserData(xp, (void *) &pdata);
 
     XML_SetElementHandler(xp, start, end);
@@ -302,23 +294,7 @@ int main(int argc, char * const argv[]) {
         }
     }
     
-    output_header(xopts.ofp);
+    xcc_output_all(pdata.xcc, xopts.ofp, xopts.bundle);
     
-    output_preamble(pdata.preamble, xopts.ofp);
-    
-    output_atype_union(pdata.a_types, xopts.ofp);
-    output_etype_union(pdata.e_types, xopts.ofp);
-
-    /* sort elements */
-    output_element_tab(pdata.elements, xopts.ofp);
-
-    output_start_handler(pdata.elements, NULL, XCC_DEFAULT_PREFIX, xopts.ofp);
-    
-    output_end_handler(pdata.elements, XCC_DEFAULT_PREFIX, xopts.ofp);
-
-    output_parser(XCC_DEFAULT_PREFIX, xopts.ofp);
-
-    output_postamble(pdata.postamble, xopts.ofp);
-
     exit(0);
 }

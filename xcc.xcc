@@ -44,7 +44,8 @@
         </attribute>
         <!-- Child elements -->
         <child name="preamble">
-            $$->preamble = $?;
+            xcc_string_set($$->preamble, $?->s);
+            xcc_string_free($?);
         </child>
         <child name="attribute-type">
             xcc_stack_increment($$->a_types, $?);
@@ -56,7 +57,8 @@
             xcc_stack_increment($$->elements, $?);
         </child>
         <child name="postamble">
-            $$->postamble = $?;
+            xcc_string_set($$->postamble, $?->s);
+            xcc_string_free($?);
         </child>
     </element>
     <element name="preamble" type="string">
@@ -172,39 +174,9 @@ int main(int argc, char * const argv[])
     
     xcc = p;
     
-    if (xopts.bundle) {
-        output_bundle(xopts.ofp);
-    } else {
-        output_header(xopts.ofp);
-    }
-    
-    /* if not defined, set default basename for handler functions */
-    if (!xcc->prefix) {
-        xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
-    }
-    
-    output_preamble(xcc->preamble, xopts.ofp);
+    /* generate the parser */
+    xcc_output_all(xcc, xopts.ofp, xopts.bundle);
 
-    output_atype_union(xcc->a_types, xopts.ofp);
-    output_etype_union(xcc->e_types, xopts.ofp);
-
-    /* sort elements */
-    output_element_tab(xcc->elements, xopts.ofp);
-
-    if (output_start_handler(xcc->elements, xcc->ns_uri, xcc->prefix, xopts.ofp)
-        != XCC_RETURN_SUCCESS) {
-        exit(1);
-    }
-    
-    if (output_end_handler(xcc->elements, xcc->prefix, xopts.ofp)
-        != XCC_RETURN_SUCCESS) {
-        exit(1);
-    }
-
-    output_parser(xcc->prefix, xopts.ofp);
-
-    output_postamble(xcc->postamble, xopts.ofp);
-    
     /* free allocated storage */
     xcc_xcc_free(xcc);
 

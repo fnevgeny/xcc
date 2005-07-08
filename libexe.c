@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2004 Evgeny Stambulchik
+ * Copyright (c) 2000-2005 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -34,11 +34,17 @@
 XCC *xcc_xcc_new(void)
 {
     XCC *xcc;
+    
     xcc = xcc_malloc(sizeof(XCC));
     memset(xcc, 0, sizeof(XCC));
+    
     xcc->a_types = xcc_stack_new((XCC_stack_data_free) atype_free);
     xcc->e_types = xcc_stack_new((XCC_stack_data_free) etype_free);
     xcc->elements = xcc_stack_new((XCC_stack_data_free) element_free);
+    
+    xcc->preamble = xcc_string_new();
+    xcc->postamble = xcc_string_new();
+    
     return xcc;
 }
 
@@ -181,39 +187,53 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name)
     return NULL;
 }
 
-int output_header(FILE *fp)
+
+static int output_header(FILE *fp)
 {
     fprintf(fp, "/* Produced by %s */\n\n", xcc_get_version_string());
     fprintf(fp, "#include <xcc.h>\n");
     return XCC_RETURN_SUCCESS;
 }
 
-int output_preamble(const XCCString *pre, FILE *fp)
+static int output_bundle(FILE *fp)
 {
-    if (pre && pre->s) {
-        fprintf(fp, "%s\n", pre->s);
+    int i = 0;
+    char *s;
+    while ((s = bundle_str[i])) {
+        fprintf(fp, "%s\n", s);
+        i++;
+    }
+    
+    return XCC_RETURN_SUCCESS;
+}
+
+
+static int output_preamble(const XCC *xcc, FILE *fp)
+{
+    if (xcc->preamble->s) {
+        fprintf(fp, "%s\n", xcc->preamble->s);
     }
     return XCC_RETURN_SUCCESS;
 }
 
-int output_postamble(const XCCString *post, FILE *fp)
+static int output_postamble(const XCC *xcc, FILE *fp)
 {
-    if (post && post->s) {
-        fprintf(fp, "%s\n", post->s);
+    if (xcc->postamble->s) {
+        fprintf(fp, "%s\n", xcc->postamble->s);
     }
     return XCC_RETURN_SUCCESS;
 }
 
-int output_atype_union(const XCCStack *a_types, FILE *fp)
+static int output_atype_union(const XCC *xcc, FILE *fp)
 {
     int i, n_atypes;
     
-    n_atypes = xcc_stack_depth(a_types);
+    n_atypes = xcc_stack_depth(xcc->a_types);
     fprintf(fp, "typedef union {\n");
     for (i = 0; i < n_atypes; i++) {
         AType *atype;
         void *p;
-        xcc_stack_get_data(a_types, i, &p);
+        xcc_stack_get_data(xcc->a_types, i, &p);
         atype = p;
         fprintf(fp, "    %s %s;\n", atype->ctype, atype->name);
     }
@@ -222,16 +242,16 @@ int output_atype_union(const XCCStack *a_types, FILE *fp)
     return XCC_RETURN_SUCCESS;
 }
 
-int output_etype_union(const XCCStack *e_types, FILE *fp)
+static int output_etype_union(const XCC *xcc, FILE *fp)
 {
     int i, n_etypes;
     
-    n_etypes = xcc_stack_depth(e_types);
+    n_etypes = xcc_stack_depth(xcc->e_types);
     fprintf(fp, "typedef union {\n");
     for (i = 0; i < n_etypes; i++) {
         EType *etype;
         void *p;
-        xcc_stack_get_data(e_types, i, &p);
+        xcc_stack_get_data(xcc->e_types, i, &p);
         etype = p;
         fprintf(fp, "    %s %s;\n", etype->ctype, etype->name);
     }
@@ -309,17 +329,17 @@ static char *print_sharp_name(const char *name)
     return pname;
 }
 
-int output_element_tab(const XCCStack *elements, FILE *fp)
+int output_element_tab(const XCC *xcc, FILE *fp)
 {
     int i, n_elements;
     
-    n_elements = xcc_stack_depth(elements);
+    n_elements = xcc_stack_depth(xcc->elements);
     fprintf(fp, "static XCCElementEntry XCCElementTab[] = {\n");
     for (i = 0; i < n_elements; i++) {
         Element *e;
         char *pname;
         void *p;
-        xcc_stack_get_data(elements, i, &p);
+        xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
         e->id = i + 1;
         pname = print_sharp_name(e->name);
@@ -359,16 +379,15 @@ static Element *get_element_by_name(const XCCStack *elements, const char *name)
 }
 
 
-int output_start_handler(const XCCStack *elements,
-    const char *ns_uri, const char *prefix, FILE *fp)
+static int output_start_handler(const XCC *xcc, FILE *fp)
 {
     int i, n_elements;
     char *pns_uri, *buf1, *buf2;
 
-    n_elements = xcc_stack_depth(elements);
+    n_elements = xcc_stack_depth(xcc->elements);
 
     fprintf(fp, "static void %s_start_handler(void *data, const char *el, const char **attr)\n",
-                prefix);  
+                xcc->prefix);  
     fprintf(fp, "{\n");
     fprintf(fp, "    XCCParserData *pdata = (XCCParserData *) data;\n");
     fprintf(fp, "    XCCNode *pnode = NULL, *node;\n");
@@ -386,7 +405,7 @@ int output_start_handler(const XCCStack *elements,
     fprintf(fp, "        pdata->cbuffer[0] = '\\0';\n");
     fprintf(fp, "    }\n");
 
-    pns_uri = print_sharp_name(ns_uri);
+    pns_uri = print_sharp_name(xcc->ns_uri);
     fprintf(fp, "    el_local  = xcc_get_local(el, %s, &skip);\n", pns_uri);
     fprintf(fp, "    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
     fprintf(fp, "        parent_id = 0;\n");
@@ -418,7 +437,7 @@ int output_start_handler(const XCCStack *elements,
         void *p;
         int j, n_children, parent_id;
         
-        xcc_stack_get_data(elements, i, &p);
+        xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
         parent_id  = e->id;
         n_children = xcc_stack_depth(e->children);
@@ -429,7 +448,7 @@ int output_start_handler(const XCCStack *elements,
             c = p;
             
             /* check if this child have single parents' ctype */
-            ce = get_element_by_name(elements, c->name);
+            ce = get_element_by_name(xcc->elements, c->name);
             if (ce->same_parents) {
                 if (!ce->parent_etype) {
                     ce->parent_etype = e->etype;
@@ -460,7 +479,7 @@ int output_start_handler(const XCCStack *elements,
         int j, n_attributes, element_id;
         char ebuf[128], abuf[128];
         
-        xcc_stack_get_data(elements, i, &p);
+        xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
         element_id  = e->id;
 
@@ -557,15 +576,16 @@ int output_start_handler(const XCCStack *elements,
 }
 
 
-int output_end_handler(const XCCStack *elements, const char *prefix, FILE *fp)
+int output_end_handler(const XCC *xcc, FILE *fp)
 {
     int i, n_elements;
     char *buf1, *buf2;
     char pbuf[128], ebuf[128];
 
-    n_elements = xcc_stack_depth(elements);
+    n_elements = xcc_stack_depth(xcc->elements);
 
-    fprintf(fp, "static void %s_end_handler(void *data, const char *el)\n", prefix);  
+    fprintf(fp, "static void %s_end_handler(void *data, const char *el)\n",
+        xcc->prefix);  
     fprintf(fp, "{\n");
     fprintf(fp, "    XCCParserData *pdata = (XCCParserData *) data;\n");
     fprintf(fp, "    XCCNode *node, *pnode;\n");
@@ -588,7 +608,7 @@ int output_end_handler(const XCCStack *elements, const char *prefix, FILE *fp)
         void *p;
         int element_id;
 
-        xcc_stack_get_data(elements, i, &p);
+        xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
         if (e->data->s != NULL) {
             sprintf(ebuf, "element.%s", e->etype->name);
@@ -635,7 +655,7 @@ int output_end_handler(const XCCStack *elements, const char *prefix, FILE *fp)
         void *p;
         int j, n_children, parent_id;
         
-        xcc_stack_get_data(elements, i, &p);
+        xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
         parent_id  = e->id;
         n_children = xcc_stack_depth(e->children);
@@ -645,7 +665,7 @@ int output_end_handler(const XCCStack *elements, const char *prefix, FILE *fp)
             Element *ce;
             xcc_stack_get_data(e->children, j, &p);
             c = p;
-            ce = get_element_by_name(elements, c->name);
+            ce = get_element_by_name(xcc->elements, c->name);
             if (!ce) {
                 xcc_error("couldn't find definition for element %s", c->name);
                 return XCC_RETURN_FAILURE;
@@ -684,15 +704,15 @@ int output_end_handler(const XCCStack *elements, const char *prefix, FILE *fp)
     return XCC_RETURN_SUCCESS;
 }
 
-int output_parser(const char *prefix, FILE *fp)
+static int output_parser(const XCC *xcc, FILE *fp)
 {
-    fprintf(fp, "int %s_parse(FILE *fp, void *udata, void **root)\n", prefix);
+    fprintf(fp, "int %s_parse(FILE *fp, void *udata, void **root)\n", xcc->prefix);
     fprintf(fp, "{\n");
 
     fprintf(fp, "    void *p;\n\n");
 
     fprintf(fp, "    if (xcc_run(fp, udata, &p, %s_start_handler, %s_end_handler)\n",
-        prefix, prefix);
+        xcc->prefix, xcc->prefix);
     fprintf(fp, "        != XCC_RETURN_SUCCESS) {\n");
     fprintf(fp, "        return XCC_RETURN_FAILURE;\n");
     fprintf(fp, "    }\n");
@@ -701,6 +721,40 @@ int output_parser(const char *prefix, FILE *fp)
 
     fprintf(fp, "    return XCC_RETURN_SUCCESS;\n");
     fprintf(fp, "}\n");
+
+    return XCC_RETURN_SUCCESS;
+}
+
+
+int xcc_output_all(const XCC *xcc, FILE *fp, int bundle)
+{
+    if (bundle) {
+        output_bundle(fp);
+    } else {
+        output_header(fp);
+    }
+    
+    /* if not defined, set default prefix for handler functions */
+    if (!xcc->prefix) {
+        xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
+    }
+    
+    output_preamble(xcc, fp);
+    
+    output_atype_union(xcc, fp);
+    output_etype_union(xcc, fp);
+
+    /* TODO: sort elements ?? */
+
+    output_element_tab(xcc, fp);
+
+    output_start_handler(xcc, fp);
+    
+    output_end_handler(xcc, fp);
+
+    output_parser(xcc, fp);
+
+    output_postamble(xcc, fp);
 
     return XCC_RETURN_SUCCESS;
 }
@@ -764,18 +818,6 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
     if (!xopts->ofp) {
         fprintf(stderr, "Can't open output stream\n");
         return XCC_RETURN_FAILURE;
-    }
-    
-    return XCC_RETURN_SUCCESS;
-}
-
-int output_bundle(FILE *fp)
-{
-    int i = 0;
-    char *s;
-    while ((s = bundle_str[i])) {
-        fprintf(fp, "%s\n", s);
-        i++;
     }
     
     return XCC_RETURN_SUCCESS;
