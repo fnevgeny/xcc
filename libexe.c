@@ -709,16 +709,12 @@ static int output_parser(const XCC *xcc, FILE *fp)
     fprintf(fp, "int %s_parse(FILE *fp, void *udata, void **root)\n", xcc->prefix);
     fprintf(fp, "{\n");
 
-    fprintf(fp, "    void *p;\n\n");
-
-    fprintf(fp, "    if (xcc_run(fp, udata, &p, %s_start_handler, %s_end_handler)\n",
+    fprintf(fp, "    if (xcc_run(fp, udata, root, %s_start_handler, %s_end_handler)\n",
         xcc->prefix, xcc->prefix);
     fprintf(fp, "        != XCC_RETURN_SUCCESS) {\n");
     fprintf(fp, "        return XCC_RETURN_FAILURE;\n");
     fprintf(fp, "    }\n");
     
-    fprintf(fp, "    *root = p;\n");
-
     fprintf(fp, "    return XCC_RETURN_SUCCESS;\n");
     fprintf(fp, "}\n");
 
