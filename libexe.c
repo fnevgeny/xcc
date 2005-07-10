@@ -730,11 +730,6 @@ int xcc_output_all(const XCC *xcc, FILE *fp, int bundle)
         output_header(fp);
     }
     
-    /* if not defined, set default prefix for handler functions */
-    if (!xcc->prefix) {
-        xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
-    }
-    
     output_preamble(xcc, fp);
     
     output_atype_union(xcc, fp);

@@ -173,6 +173,11 @@ int main(int argc, char * const argv[])
     }
     
     xcc = p;
+
+    /* if not defined, set default prefix for handler functions */
+    if (!xcc->prefix) {
+        xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
+    }
     
     /* generate the parser */
     xcc_output_all(xcc, xopts.ofp, xopts.bundle);
