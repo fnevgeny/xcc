@@ -82,7 +82,7 @@ int main(void)
     Books *books;
     int   ret;
     
-    ret = books_parse(stdin, NULL, &p);
+    ret = books_parse(stdin, &p, NULL, NULL);
     books = p;
     
     if (ret == XCC_RETURN_SUCCESS && books) {

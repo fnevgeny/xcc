@@ -167,7 +167,7 @@ int main(int argc, char * const argv[])
         exit(1);
     }
 
-    if (xcc_parse(xopts.ifp, NULL, &p) != XCC_RETURN_SUCCESS) {
+    if (xcc_parse(xopts.ifp, &p, NULL, NULL) != XCC_RETURN_SUCCESS) {
         xcc_error("Failed parsing input");
         exit(1);
     }

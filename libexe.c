@@ -378,7 +378,6 @@ static Element *get_element_by_name(const XCCStack *elements, const char *name)
     return NULL;
 }
 
-
 static int output_start_handler(const XCC *xcc, FILE *fp)
 {
     int i, n_elements;
@@ -465,8 +464,11 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
     
     fprintf(fp, "        break;\n");
     fprintf(fp, "    default:\n");
+    fprintf(fp, "        if (!skip && pdata->exception_handler(XCC_ECNTX, el_local, pnode ? pnode->name:NULL, pdata->udata)) {\n");
+    fprintf(fp, "            skip = 1;\n");
+    fprintf(fp, "            element_id = -1;\n");
+    fprintf(fp, "        }\n");
     fprintf(fp, "        if (!skip) {\n");
-    fprintf(fp, "            xcc_error(\"unexpected \\\"%%s\\\"->\\\"%%s\\\" combination\", pnode ? pnode->name:\"xml\", el_local);\n");
     fprintf(fp, "            pdata->error = 1;\n");
     fprintf(fp, "        }\n");
     fprintf(fp, "        break;\n");
@@ -543,8 +545,13 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
             xcc_free(buf2);
             fprintf(fp, "                } else\n");
         }
-        fprintf(fp, "                if (!askip) {\n");
-        fprintf(fp, "                    xcc_error(\"unknown attribute \\\"%%s\\\" of element \\\"%%s\\\"\", aname, el_local);\n");
+        fprintf(fp, "                {\n");
+        fprintf(fp, "                   if (!askip && pdata->exception_handler(XCC_EATTR, aname, el_local, pdata->udata)) {\n");
+        fprintf(fp, "                       askip = 1;\n");
+        fprintf(fp, "                   }\n");
+        fprintf(fp, "                   if (!askip) {\n");
+        fprintf(fp, "                       pdata->error = 1;\n");
+        fprintf(fp, "                   }\n");
         fprintf(fp, "                }\n");
         fprintf(fp, "                xcc_free(aname);\n");
         fprintf(fp, "            }\n");
@@ -555,8 +562,10 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
 
     fprintf(fp, "    default:\n");
     fprintf(fp, "        element.unicast = NULL;\n");
+    fprintf(fp, "        if (!skip && pdata->exception_handler(XCC_EELEM, el_local, pnode ? pnode->name:NULL, pdata->udata)) {\n");
+    fprintf(fp, "            skip = 1;\n");
+    fprintf(fp, "        }\n");
     fprintf(fp, "        if (!skip) {\n");
-    fprintf(fp, "            xcc_error(\"unknown element \\\"%%s\\\"\", el_local);\n");
     fprintf(fp, "            pdata->error = 1;\n");
     fprintf(fp, "        }\n");
     fprintf(fp, "        break;\n");
@@ -689,7 +698,7 @@ int output_end_handler(const XCC *xcc, FILE *fp)
 
     fprintf(fp, "    default:\n");
     fprintf(fp, "        if (!skip) {\n");
-    fprintf(fp, "            xcc_error(\"internal error\");\n");
+    fprintf(fp, "            pdata->exception_handler(XCC_EINTR, NULL, NULL, pdata->udata);\n");
     fprintf(fp, "            pdata->error = 1;\n");
     fprintf(fp, "        }\n");
     fprintf(fp, "        break;\n");
@@ -706,10 +715,10 @@ int output_end_handler(const XCC *xcc, FILE *fp)
 
 static int output_parser(const XCC *xcc, FILE *fp)
 {
-    fprintf(fp, "int %s_parse(FILE *fp, void *udata, void **root)\n", xcc->prefix);
+    fprintf(fp, "int %s_parse(FILE *fp, void **root, void *udata, XCCExceptionHandler exception_handler)\n", xcc->prefix);
     fprintf(fp, "{\n");
 
-    fprintf(fp, "    if (xcc_run(fp, udata, root, %s_start_handler, %s_end_handler)\n",
+    fprintf(fp, "    if (xcc_run(fp, root, udata, %s_start_handler, %s_end_handler, exception_handler)\n",
         xcc->prefix, xcc->prefix);
     fprintf(fp, "        != XCC_RETURN_SUCCESS) {\n");
     fprintf(fp, "        return XCC_RETURN_FAILURE;\n");

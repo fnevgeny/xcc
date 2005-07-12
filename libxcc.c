@@ -300,9 +300,34 @@ static void xcc_char_data_handler(void *data, const char *s, int len)
     pdata->cbuflen = new_len;
 }
 
-int xcc_run(FILE *fp, void *udata, void **root,
+
+static int xcc_exception_handler(int ierrno,
+    const char *entity, const char *context, void *udata)
+{
+    int handled = 0;
+    
+    switch (ierrno) {
+    case XCC_ECNTX:
+        xcc_error("unexpected \"%s\" in the context of \"%s\"", entity, context ? context:"xml");
+        break;
+    case XCC_EATTR:
+        xcc_error("unknown attribute \"%s\" of element \"%s\"", entity, context);
+        break;
+    case XCC_EELEM:
+        xcc_error("unknown element \"%s\" appeared in context of \"%s\"", entity, context);
+        break;
+    case XCC_EINTR:
+        xcc_error("internal error");
+        break;
+    }
+    
+    return handled;
+}
+
+int xcc_run(FILE *fp, void **root, void *udata,
               XML_StartElementHandler start_element_handler,
-              XML_EndElementHandler end_element_handler)
+              XML_EndElementHandler end_element_handler,
+              XCCExceptionHandler exception_handler)
 {
     XML_Parser xp;
     XCCParserData pdata;
@@ -326,6 +351,12 @@ int xcc_run(FILE *fp, void *udata, void **root,
     pdata.root     = NULL;
     
     pdata.udata    = udata;
+
+    if (exception_handler) {
+        pdata.exception_handler = exception_handler;
+    } else {
+        pdata.exception_handler = xcc_exception_handler;
+    }
     
     XML_SetUserData(xp, (void *) &pdata);
 

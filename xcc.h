@@ -52,11 +52,21 @@
 
 #define XCC_DEFAULT_PREFIX    "xcc"
 
+
+/* error codes */
+#define XCC_ECNTX   1
+#define XCC_EATTR   2
+#define XCC_EELEM   3
+#define XCC_EINTR   4
+
 /* ------------------- */
 
 #define xcc_realloc realloc
 
 typedef void (*XCC_stack_data_free)(void *data); 
+
+typedef int (*XCCExceptionHandler)(int ierrno,
+    const char *entity, const char *context, void *udata);
 
 typedef struct _XCCStack {
     unsigned int size;
@@ -86,6 +96,8 @@ typedef struct _XCCParserData {
     void *root;
     
     void *udata;
+    
+    XCCExceptionHandler exception_handler;
 } XCCParserData;
 
 typedef struct _XCCNode {
@@ -116,8 +128,9 @@ char *xcc_get_local(const char *name, const char *ns_uri, int *skip);
 
 void *xcc_get_root(XCCParserData *pdata);
 
-int xcc_run(FILE *fp, void *udata, void **root,
+int xcc_run(FILE *fp, void **root, void *udata,
               XML_StartElementHandler start_element_handler,
-              XML_EndElementHandler end_element_handler);
+              XML_EndElementHandler end_element_handler,
+              XCCExceptionHandler exception_handler);
 
 #endif /* __XCC_H_ */
