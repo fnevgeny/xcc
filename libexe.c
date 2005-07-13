@@ -229,15 +229,17 @@ static int output_atype_union(const XCC *xcc, FILE *fp)
     int i, n_atypes;
     
     n_atypes = xcc_stack_depth(xcc->a_types);
-    fprintf(fp, "typedef union {\n");
-    for (i = 0; i < n_atypes; i++) {
-        AType *atype;
-        void *p;
-        xcc_stack_get_data(xcc->a_types, i, &p);
-        atype = p;
-        fprintf(fp, "    %s %s;\n", atype->ctype, atype->name);
+    if (n_atypes > 0) {
+        fprintf(fp, "typedef union {\n");
+        for (i = 0; i < n_atypes; i++) {
+            AType *atype;
+            void *p;
+            xcc_stack_get_data(xcc->a_types, i, &p);
+            atype = p;
+            fprintf(fp, "    %s %s;\n", atype->ctype, atype->name);
+        }
+        fprintf(fp, "} XCCAType;\n\n");
     }
-    fprintf(fp, "} XCCAType;\n\n");
     
     return XCC_RETURN_SUCCESS;
 }
