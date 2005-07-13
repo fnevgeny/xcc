@@ -622,7 +622,7 @@ int output_end_handler(const XCC *xcc, FILE *fp)
         if (e->data->s != NULL) {
             sprintf(ebuf, "element.%s", e->etype->name);
             element_id  = e->id;
-            fprintf(fp, "    case %d:\n", element_id);
+            fprintf(fp, "    case %d: /* %s */\n", element_id, e->name);
             fprintf(fp, "        {\n");
             buf1 = replace(e->data->s, "$$", ebuf);
             buf2 = replace(buf1, "$?", "cdata");
