@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2004 Evgeny Stambulchik
+ * Copyright (c) 2000-2005 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
