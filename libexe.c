@@ -448,8 +448,13 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
             xcc_stack_get_data(e->children, j, &p);
             c = p;
             
-            /* check if this child have single parents' ctype */
             ce = get_element_by_name(xcc->elements, c->name);
+            if (!ce) {
+                xcc_error("couldn't find definition for element %s", c->name);
+                return XCC_RETURN_FAILURE;
+            }
+
+            /* check if this child have single parents' ctype */
             if (ce->same_parents) {
                 if (!ce->parent_etype) {
                     ce->parent_etype = e->etype;
