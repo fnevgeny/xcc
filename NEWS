@@ -1,3 +1,16 @@
+New with 0.4.0, released 2005-07-26:
+
+    * xcc_parse() is now dynamically generated, and may be optionally
+      prefixed, thus allowing for multiple parsers per application.
+    * Implemented exception handling via (optional) user-supplied
+      function.
+    * [BB] Fixed segfault when no element-type definition existed
+      for an element.
+    * [BB] Don't declare an empty XCCAType if there are no
+      attributes.
+    * [BB] Add the element name to the case labels in end_handler().
+
+
 New with 0.3.4, released 2005-07-04:
 
     * Added exception notice to the public XCC stuff, permitting
@@ -9,3 +22,8 @@ New with 0.3.4, released 2005-07-04:
 New with 0.3.3, released 2005-03-13:
 
     * First public release.
+
+
+Contributions by:
+
+    [BB] Botond Botyanszki
