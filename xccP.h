@@ -44,6 +44,7 @@ typedef struct {
     FILE *ifp;
     FILE *ofp;
     int  bundle;
+    int  schema;
 } XCCOpts;
 
 
@@ -113,7 +114,9 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 XCC *xcc_xcc_new(void);
 void xcc_xcc_free(XCC *xcc);
 
-int xcc_output_all(const XCC *xcc, FILE *fp, int bundle);
+int xcc_output_parser(const XCC *xcc, FILE *fp, int bundle);
+
+int xcc_output_schema(const XCC *xcc, FILE *fp);
 
 int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[]);
 

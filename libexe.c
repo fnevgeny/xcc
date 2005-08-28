@@ -30,6 +30,7 @@
 
 #include "xccP.h"
 #include "bundle.i"
+#include "xfile.h"
 
 XCC *xcc_xcc_new(void)
 {
@@ -331,7 +332,7 @@ static char *print_sharp_name(const char *name)
     return pname;
 }
 
-int output_element_tab(const XCC *xcc, FILE *fp)
+static int output_element_tab(const XCC *xcc, FILE *fp)
 {
     int i, n_elements;
     
@@ -592,7 +593,7 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
 }
 
 
-int output_end_handler(const XCC *xcc, FILE *fp)
+static int output_end_handler(const XCC *xcc, FILE *fp)
 {
     int i, n_elements;
     char *buf1, *buf2;
@@ -738,7 +739,7 @@ static int output_parser(const XCC *xcc, FILE *fp)
 }
 
 
-int xcc_output_all(const XCC *xcc, FILE *fp, int bundle)
+int xcc_output_parser(const XCC *xcc, FILE *fp, int bundle)
 {
     if (bundle) {
         output_bundle(fp);
@@ -766,6 +767,92 @@ int xcc_output_all(const XCC *xcc, FILE *fp, int bundle)
     return XCC_RETURN_SUCCESS;
 }
 
+int xcc_output_schema(const XCC *xcc, FILE *fp)
+{
+    XFile *xf = xfile_new(fp);
+    Attributes *attrs = attributes_new();
+    int i, n_elements;
+
+    if (!xf || !attrs) {
+        return XCC_RETURN_FAILURE;
+    }
+    
+    attributes_reset(attrs);
+
+    xfile_set_ns(xf, "xs", "http://www.w3.org/2001/XMLSchema", 1);
+
+    xfile_begin(xf, 1, NULL, NULL, "schema", attrs);
+
+
+    n_elements = xcc_stack_depth(xcc->elements);
+    for (i = 0; i < n_elements; i++) {
+        Element *e;
+        void *p;
+        int j, n_children, n_attributes, parent_id;
+        
+        xcc_stack_get_data(xcc->elements, i, &p);
+        e = p;
+        parent_id  = e->id;
+        
+        n_children = xcc_stack_depth(e->children);
+        n_attributes = xcc_stack_depth(e->attributes);
+
+        attributes_reset(attrs);
+        attributes_set_sval(attrs, "name", e->name);
+        
+        if (n_children || n_attributes) {
+            xfile_begin_element(xf, "element", attrs);
+            
+            attributes_reset(attrs);
+            if (e->data->s) {
+                attributes_set_sval(attrs, "mixed", "true");
+            }
+            xfile_begin_element(xf, "complexType", attrs);
+            
+            if (n_children) {
+                xfile_begin_element(xf, "sequence", NULL);
+                for (j = 0; j < n_children; j++) {
+                    Child *c;
+                    xcc_stack_get_data(e->children, j, &p);
+                    c = p;
+
+                    attributes_reset(attrs);
+                    attributes_set_sval(attrs, "ref", c->name);
+                    attributes_set_ival(attrs, "minOccurs", 0);
+                    attributes_set_sval(attrs, "maxOccurs", "unbounded");
+                    xfile_empty_element(xf, "element", attrs);
+                }
+                xfile_end_element(xf, "sequence");
+            }
+            
+            for (j = 0; j < n_attributes; j++) {
+                Attribute *a;
+
+                xcc_stack_get_data(e->attributes, j, &p);
+                a = p;
+
+                attributes_reset(attrs);
+                attributes_set_sval(attrs, "name", a->name);
+                xfile_empty_element(xf, "attribute", attrs);
+            }
+
+            xfile_end_element(xf, "complexType");
+            
+            xfile_end_element(xf, "element");
+        } else {
+            xfile_empty_element(xf, "element", attrs);
+        }
+
+    }
+
+    attributes_free(attrs);
+    
+    xfile_end(xf);
+    xfile_free(xf);
+
+    return XCC_RETURN_SUCCESS;
+}
+
 static void usage(const char *arg0, FILE *fp)
 {
     fprintf(fp, "Usage: %s [options]\n", arg0);
@@ -773,6 +860,7 @@ static void usage(const char *arg0, FILE *fp)
     fprintf(fp, "  -i <file>  input file [stdin]\n");
     fprintf(fp, "  -o <file>  output file [stdout]\n");
     fprintf(fp, "  -b         bundle auxiliary stuff into parser\n");
+    fprintf(fp, "  -s         output WXS schema\n");
     fprintf(fp, "  -V         display version info and exit\n");
     fprintf(fp, "  -h         print this help and exit\n");
 }
@@ -781,7 +869,7 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "i:o:bVh")) != -1) {
+    while ((opt = getopt(argc, argv, "i:o:bsVh")) != -1) {
         switch (opt) {
         case 'i':
             xopts->ifile = optarg;
@@ -791,6 +879,9 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
             break;
         case 'b':
             xopts->bundle = 1;
+            break;
+        case 's':
+            xopts->schema = 1;
             break;
         case 'V':
             printf("%s\n", xcc_get_version_string());

@@ -180,7 +180,11 @@ int main(int argc, char * const argv[])
     }
     
     /* generate the parser */
-    xcc_output_all(xcc, xopts.ofp, xopts.bundle);
+    if (xopts.schema) {
+        xcc_output_schema(xcc, xopts.ofp);
+    } else {
+        xcc_output_parser(xcc, xopts.ofp, xopts.bundle);
+    }
 
     /* free allocated storage */
     xcc_xcc_free(xcc);

@@ -18,8 +18,8 @@ XCC_XCC = xcc.xcc
 BPROG  = bxcc
 PROG   = xcc
 
-BOBJS  = bxcc.o libexe.o
-OBJS   = xcc.o libexe.o
+BOBJS  = bxcc.o libexe.o xfile.o
+OBJS   = xcc.o libexe.o xfile.o
 
 LOBJS  = libxcc.o
 
@@ -69,11 +69,12 @@ check: xcc_t.c xcc.c
 	@diff -q xcc_t.c xcc.c
 	@if test $$? -ne 0; then echo "Failed"; else echo "OK"; fi
 
-tags: bxcc.c xcc.h xccP.h libexe.c libxcc.c
-	ctags bxcc.c xcc.h xccP.h libexe.c libxcc.c
+tags: bxcc.c xcc.h xccP.h xfile.h libexe.c libxcc.c xfile.c
+	ctags bxcc.c xcc.h xccP.h xfile.h libexe.c libxcc.c xfile.c
 
 # Deps
 libxcc.o: xccP.h xcc.h
-libexe.o: xccP.h xcc.h $(BUNDLE_I)
+libexe.o: xccP.h xcc.h $(BUNDLE_I) xfile.h
+xfile.o: xfile.h
 bxcc.o: xccP.h xcc.h
 xcc.o: xccP.h xcc.h

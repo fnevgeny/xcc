@@ -296,7 +296,7 @@ int main(int argc, char * const argv[]) {
     
     pdata.xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
     
-    xcc_output_all(pdata.xcc, xopts.ofp, xopts.bundle);
+    xcc_output_parser(pdata.xcc, xopts.ofp, xopts.bundle);
     
     exit(0);
 }
