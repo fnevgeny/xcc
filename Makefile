@@ -15,6 +15,8 @@ LIBS = $(EXPAT_LIB)
 
 XCC_XCC = xcc.xcc
 
+SCHEMA = xcc.xsd
+
 BPROG  = bxcc
 B2PROG = b2xcc
 PROG   = xcc
@@ -29,7 +31,7 @@ XCCLIB = libxcc.a
 
 BUNDLE_I = bundle.i 
 
-all: $(PROG)
+all: $(PROG) $(SCHEMA)
 
 $(XCCLIB): $(LOBJS)
 	$(AR) $@ $(LOBJS)
@@ -53,8 +55,11 @@ xcc_t.c:  $(XCC_XCC) $(PROG)
 $(BUNDLE_I): xcc.h libxcc.c
 	./c2cstr.sh xcc.h libxcc.c > $@
 
+$(SCHEMA):  $(XCC_XCC) $(PROG)
+	./$(PROG) -i $(XCC_XCC) -s -o $@
+
 clean:
-	rm -f $(BPROG) $(PROG) \
+	rm -f $(BPROG) $(B2PROG) $(PROG) $(SCHEMA) \
 	$(BOBJS) $(B2OBJS) $(OBJS) $(LOBJS) $(XCCLIB) \
 	b2xcc.c xcc.c xcc_t.c $(BUNDLE_I) tags ChangeLog *~ *.bak
 
