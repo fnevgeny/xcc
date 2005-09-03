@@ -80,9 +80,9 @@ typedef struct _Attribute {
 typedef struct _Child {
     char *name;
     char *ccode;
+    unsigned int minOccurs;
+    unsigned int maxOccurs;
 } Child;
-
-void *xcc_malloc(size_t size);
 
 char *xcc_strdup(const char *s);
 

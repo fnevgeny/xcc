@@ -32,6 +32,9 @@
 #include "bundle.i"
 #include "xfile.h"
 
+/* TODO: get rid of it */
+#define KEY_SHIFT   1
+
 XCC *xcc_xcc_new(void)
 {
     XCC *xcc;
@@ -344,7 +347,7 @@ static int output_element_tab(const XCC *xcc, FILE *fp)
         void *p;
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
-        e->id = i + 1;
+        e->id = i + KEY_SHIFT;
         pname = print_sharp_name(e->name);
         fprintf(fp, "    {%d, %s}%s\n", e->id, pname, i == n_elements - 1 ? "":",");
         xcc_free(pname);
@@ -361,6 +364,18 @@ static int output_element_tab(const XCC *xcc, FILE *fp)
     fprintf(fp, "    }\n");
     fprintf(fp, "    return -1;\n");
     fprintf(fp, "}\n\n");
+
+    fprintf(fp, "static char *get_element_name_by_id(int id)\n");
+    fprintf(fp, "{\n");
+    fprintf(fp, "    int i;\n");
+    fprintf(fp, "    for (i = 0; i < %d; i++) {\n", n_elements);
+    fprintf(fp, "        if (XCCElementTab[i].key == id) {\n");
+    fprintf(fp, "            return XCCElementTab[i].name;\n");
+    fprintf(fp, "        }\n");
+    fprintf(fp, "    }\n");
+    fprintf(fp, "    return NULL;\n");
+    fprintf(fp, "}\n\n");
+
     
     return XCC_RETURN_SUCCESS;
 }
@@ -381,6 +396,88 @@ static Element *get_element_by_name(const XCCStack *elements, const char *name)
     return NULL;
 }
 
+static int output_init_occurrence(const XCC *xcc, FILE *fp)
+{
+    int i, n_elements, n_children;
+    void *p;
+    Element *e;
+
+    n_elements = xcc_stack_depth(xcc->elements);
+
+    fprintf(fp, "static XCCOccurrence *init_occurrence(int element_id)\n");
+    fprintf(fp, "{\n");
+
+    fprintf(fp, "    XCCOccurrence *occurrence;\n");
+
+    fprintf(fp, "    switch (element_id) {\n");
+    for (i = 0; i < n_elements; i++) {
+        xcc_stack_get_data(xcc->elements, i, &p);
+        e = p;
+
+        n_children = xcc_stack_depth(e->children);
+        if (!n_children) {
+            fprintf(fp, "    case %d:\n", e->id);
+        }
+    }
+    fprintf(fp, "        return NULL;\n");
+    fprintf(fp, "        break;\n");
+    fprintf(fp, "    }\n\n");
+
+    fprintf(fp, "    occurrence = xcc_malloc(%d*sizeof(XCCOccurrence));\n",
+        n_elements);
+    fprintf(fp, "    if (occurrence) {\n");
+    fprintf(fp, "        memset(occurrence, 0, %d*sizeof(XCCOccurrence));\n",
+        n_elements);
+    fprintf(fp, "        switch (element_id) {\n");
+
+    for (i = 0; i < n_elements; i++) {
+        int j;
+        
+        xcc_stack_get_data(xcc->elements, i, &p);
+        e = p;
+        n_children = xcc_stack_depth(e->children);
+
+        if (n_children) {
+            fprintf(fp, "        case %d:\n", e->id);
+
+            for (j = 0; j < n_children; j++) {
+                Child *c;
+                Element *ce;
+                xcc_stack_get_data(e->children, j, &p);
+                c = p;
+
+                ce = get_element_by_name(xcc->elements, c->name);
+                if (!ce) {
+                    xcc_error("couldn't find definition for element %s", c->name);
+                    return XCC_RETURN_FAILURE;
+                }
+
+                fprintf(fp, "            occurrence[%d].allowed = 1;\n",
+                    ce->id - KEY_SHIFT);
+                if (c->minOccurs) {
+                    fprintf(fp, "            occurrence[%d].minOccurs = %d;\n",
+                        ce->id - KEY_SHIFT, c->minOccurs);
+                }
+                if (c->maxOccurs) {
+                    fprintf(fp, "            occurrence[%d].maxOccurs = %d;\n",
+                        ce->id - KEY_SHIFT, c->maxOccurs);
+                }
+            }
+
+            fprintf(fp, "            break;\n");
+        }
+    }
+    
+    fprintf(fp, "        }\n");
+    fprintf(fp, "    }\n");
+
+
+    fprintf(fp, "    return occurrence;\n");
+    fprintf(fp, "}\n\n");
+    
+    return XCC_RETURN_SUCCESS;
+}
+
 static int output_start_handler(const XCC *xcc, FILE *fp)
 {
     int i, n_elements;
@@ -395,7 +492,7 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
     fprintf(fp, "    XCCNode *pnode = NULL, *node;\n");
     fprintf(fp, "    XCCEType element;\n");
     fprintf(fp, "    XCCAType attribute;\n");
-    fprintf(fp, "    int i, element_id, parent_id, parent_child, skip = 0;\n");
+    fprintf(fp, "    int i, element_id = -1, parent_id = -1, skip = 0;\n");
     fprintf(fp, "    const char *avalue;\n");
     fprintf(fp, "    char *aname, *el_local;\n");
     fprintf(fp, "\n");
@@ -405,11 +502,18 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
     fprintf(fp, "    pdata->cbuflen = 0;\n");
     fprintf(fp, "    if (pdata->cbufsize) {\n");
     fprintf(fp, "        pdata->cbuffer[0] = '\\0';\n");
-    fprintf(fp, "    }\n");
+    fprintf(fp, "    }\n\n");
+
+    fprintf(fp, "    element.unicast = NULL;\n\n");
 
     pns_uri = print_sharp_name(xcc->ns_uri);
     fprintf(fp, "    el_local  = xcc_get_local(el, %s, &skip);\n", pns_uri);
+    fprintf(fp, "    if (skip) {\n");
+    fprintf(fp, "        goto e_switch;\n");
+    fprintf(fp, "    }\n\n");
+
     fprintf(fp, "    if (xcc_stack_depth(pdata->nodes) == 0) {\n");
+    fprintf(fp, "        pnode = NULL;\n");
     fprintf(fp, "        parent_id = 0;\n");
     fprintf(fp, "    } else {\n");
     fprintf(fp, "        void *p;\n");
@@ -419,68 +523,55 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
     fprintf(fp, "    }\n");
     fprintf(fp, "    if (parent_id < 0) {\n");
     fprintf(fp, "        skip = 1;\n");
-    fprintf(fp, "    }\n");
-    fprintf(fp, "    if (skip) {\n");
-    fprintf(fp, "        element_id = -1;\n");
-    fprintf(fp, "    } else {\n");
-    fprintf(fp, "        element_id = get_element_id_by_name(el_local);\n");
-    fprintf(fp, "    }\n");
-
-    fprintf(fp, "    if (parent_id >= 0 && element_id >= 0) {\n");
-    fprintf(fp, "        parent_child = %d*parent_id + element_id;\n", n_elements);
-    fprintf(fp, "    } else {\n");
-    fprintf(fp, "        parent_child = -1;\n");
+    fprintf(fp, "        goto e_switch;\n");
     fprintf(fp, "    }\n\n");
-    fprintf(fp, "    switch (parent_child) {\n");
-    fprintf(fp, "    case 1:\n");
-    
-    for (i = 0; i < n_elements; i++) {
-        Element *e;
-        void *p;
-        int j, n_children, parent_id;
-        
-        xcc_stack_get_data(xcc->elements, i, &p);
-        e = p;
-        parent_id  = e->id;
-        n_children = xcc_stack_depth(e->children);
-        for (j = 0; j < n_children; j++) {
-            Child *c;
-            Element *ce;
-            xcc_stack_get_data(e->children, j, &p);
-            c = p;
-            
-            ce = get_element_by_name(xcc->elements, c->name);
-            if (!ce) {
-                xcc_error("couldn't find definition for element %s", c->name);
-                return XCC_RETURN_FAILURE;
-            }
 
-            /* check if this child have single parents' ctype */
-            if (ce->same_parents) {
-                if (!ce->parent_etype) {
-                    ce->parent_etype = e->etype;
-                } else
-                if (ce->parent_etype != e->etype) {
-                    ce->same_parents = 0;
-                    ce->parent_etype = NULL;
-                }
-            }
-            
-            fprintf(fp, "    case %d:\n", n_elements*parent_id + ce->id);
-        }
-    }
-    
-    fprintf(fp, "        break;\n");
-    fprintf(fp, "    default:\n");
-    fprintf(fp, "        if (!skip && pdata->exception_handler(XCC_ECNTX, el_local, pnode ? pnode->name:NULL, pdata->udata)) {\n");
+    fprintf(fp, "    element_id = get_element_id_by_name(el_local);\n");
+
+
+
+
+    fprintf(fp, "    if (element_id < 0) {\n");
+    fprintf(fp, "        if (pdata->exception_handler(XCC_EELEM, el_local, pnode ? pnode->name:NULL, pdata->udata)) {\n");
     fprintf(fp, "            skip = 1;\n");
-    fprintf(fp, "            element_id = -1;\n");
-    fprintf(fp, "        }\n");
-    fprintf(fp, "        if (!skip) {\n");
+    fprintf(fp, "        } else {\n");
     fprintf(fp, "            pdata->error = 1;\n");
     fprintf(fp, "        }\n");
-    fprintf(fp, "        break;\n");
+    fprintf(fp, "        goto e_switch;\n");
     fprintf(fp, "    }\n\n");
+    
+    fprintf(fp, "    if (!pnode) {\n");
+    fprintf(fp, "        goto e_switch;\n");
+    fprintf(fp, "    }\n\n");
+    
+    fprintf(fp, "    if (pnode->occurrence) {\n");
+    fprintf(fp, "        pnode->occurrence[element_id - %d].occurred++;\n",
+        KEY_SHIFT);
+    fprintf(fp, "    }\n\n");
+    
+    fprintf(fp, "    if (!pnode->occurrence || !pnode->occurrence[element_id - %d].allowed) {\n",
+        KEY_SHIFT);
+    fprintf(fp, "        if (pdata->exception_handler(XCC_ECNTX, el_local, pnode ? pnode->name:NULL, pdata->udata)) {\n");
+    fprintf(fp, "            skip = 1;\n");
+    fprintf(fp, "        } else {\n");
+    fprintf(fp, "            pdata->error = 1;\n");
+    fprintf(fp, "        }\n");
+    fprintf(fp, "        goto e_switch;\n");
+    fprintf(fp, "    }\n\n");
+    
+    fprintf(fp, "    if (pnode->occurrence[element_id - %d].maxOccurs &&\n",
+        KEY_SHIFT);
+    fprintf(fp, "        pnode->occurrence[element_id - %d].occurred > pnode->occurrence[element_id - %d].maxOccurs) {\n",
+        KEY_SHIFT, KEY_SHIFT);
+    fprintf(fp, "        if (pdata->exception_handler(XCC_EEMAX, el_local, pnode->name, pdata->udata)) {\n");
+    fprintf(fp, "            skip = 1;\n");
+    fprintf(fp, "        } else {\n");
+    fprintf(fp, "            pdata->error = 1;\n");
+    fprintf(fp, "        }\n");
+    fprintf(fp, "        goto e_switch;\n");
+    fprintf(fp, "    }\n\n");
+
+    fprintf(fp, "e_switch:\n\n");
 
     fprintf(fp, "    switch (element_id) {\n");
     for (i = 0; i < n_elements; i++) {
@@ -568,22 +659,17 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
 
     xcc_free(pns_uri);
 
-    fprintf(fp, "    default:\n");
-    fprintf(fp, "        element.unicast = NULL;\n");
-    fprintf(fp, "        if (!skip && pdata->exception_handler(XCC_EELEM, el_local, pnode ? pnode->name:NULL, pdata->udata)) {\n");
-    fprintf(fp, "            skip = 1;\n");
-    fprintf(fp, "        }\n");
-    fprintf(fp, "        if (!skip) {\n");
-    fprintf(fp, "            pdata->error = 1;\n");
-    fprintf(fp, "        }\n");
-    fprintf(fp, "        break;\n");
     fprintf(fp, "    }\n\n");
 
+    fprintf(fp, "    if (skip) {\n");
+    fprintf(fp, "        element_id = -1;\n");
+    fprintf(fp, "    }\n\n");
     
     fprintf(fp, "    node = xcc_node_new();\n");
     fprintf(fp, "    node->name = el_local;\n");
     fprintf(fp, "    node->id = element_id;\n");
     fprintf(fp, "    node->data = element.unicast;\n");
+    fprintf(fp, "    node->occurrence = init_occurrence(element_id);\n");
     
     fprintf(fp, "    xcc_stack_increment(pdata->nodes, node);\n");
     
@@ -641,7 +727,18 @@ static int output_end_handler(const XCC *xcc, FILE *fp)
             fprintf(fp, "        break;\n");
         }
     }
-        
+    fprintf(fp, "    }\n\n");
+
+    fprintf(fp, "    if (node->occurrence) {\n");
+    fprintf(fp, "        unsigned int i;\n");
+    fprintf(fp, "        for (i = 0; i < %d; i++) {\n", n_elements);
+    fprintf(fp, "            if (node->occurrence[i].occurred < node->occurrence[i].minOccurs) {\n");
+    fprintf(fp, "                char *cname = get_element_name_by_id(i + %d);\n", KEY_SHIFT);
+    fprintf(fp, "                if (!pdata->exception_handler(XCC_EEMIN, cname, node->name, pdata->udata)) {\n");
+    fprintf(fp, "                    pdata->error = 1;\n");
+    fprintf(fp, "                }\n");
+    fprintf(fp, "            }\n");
+    fprintf(fp, "        }\n");
     fprintf(fp, "    }\n\n");
 
     fprintf(fp, "    xcc_stack_decrement(pdata->nodes);\n");
@@ -756,6 +853,8 @@ int xcc_output_parser(const XCC *xcc, FILE *fp, int bundle)
 
     output_element_tab(xcc, fp);
 
+    output_init_occurrence(xcc, fp);
+
     output_start_handler(xcc, fp);
     
     output_end_handler(xcc, fp);
@@ -818,8 +917,12 @@ int xcc_output_schema(const XCC *xcc, FILE *fp)
 
                     attributes_reset(attrs);
                     attributes_set_sval(attrs, "ref", c->name);
-                    attributes_set_ival(attrs, "minOccurs", 0);
-                    attributes_set_sval(attrs, "maxOccurs", "unbounded");
+                    attributes_set_ival(attrs, "minOccurs", c->minOccurs);
+                    if (c->maxOccurs) {
+                        attributes_set_ival(attrs, "maxOccurs", c->maxOccurs);
+                    } else {
+                        attributes_set_sval(attrs, "maxOccurs", "unbounded");
+                    }
                     xfile_empty_element(xf, "element", attrs);
                 }
                 xfile_end_element(xf, "sequence");

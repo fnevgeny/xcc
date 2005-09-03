@@ -248,6 +248,7 @@ void xcc_node_free(XCCNode *n)
 {
     if (n) {
         xcc_free(n->name);
+        xcc_free(n->occurrence);
         xcc_free(n);
     }
 }
@@ -315,6 +316,12 @@ static int xcc_exception_handler(int ierrno,
         break;
     case XCC_EELEM:
         xcc_error("unknown element \"%s\" appeared in context of \"%s\"", entity, context);
+        break;
+    case XCC_EEMIN:
+        xcc_error("underrun of occurrences of \"%s\" in the context of \"%s\"", entity, context);
+        break;
+    case XCC_EEMAX:
+        xcc_error("overrun of occurrences of \"%s\" in the context of \"%s\"", entity, context);
         break;
     case XCC_EINTR:
         xcc_error("internal error");

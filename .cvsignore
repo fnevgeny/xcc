@@ -1,4 +1,4 @@
-bxcc xcc
-xcc.c xcc_t.c
+bxcc b2xcc xcc
+b2xcc.c xcc.c xcc_t.c
 bundle.i
 ChangeLog

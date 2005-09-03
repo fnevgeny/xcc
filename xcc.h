@@ -57,7 +57,9 @@
 #define XCC_ECNTX   1
 #define XCC_EATTR   2
 #define XCC_EELEM   3
-#define XCC_EINTR   4
+#define XCC_EEMIN   4
+#define XCC_EEMAX   5
+#define XCC_EINTR   6
 
 /* ------------------- */
 
@@ -100,15 +102,24 @@ typedef struct _XCCParserData {
     XCCExceptionHandler exception_handler;
 } XCCParserData;
 
+typedef struct {
+    int          allowed;
+    unsigned int minOccurs;
+    unsigned int maxOccurs;
+    unsigned int occurred;
+} XCCOccurrence;
+
 typedef struct _XCCNode {
     char *name;
     int  id;
     void *data;
+    XCCOccurrence *occurrence;
 } XCCNode;
 
 void xcc_get_version_numbers(int *major, int *minor, int *nano);
 char *xcc_get_version_string(void);
 
+void *xcc_malloc(size_t size);
 void xcc_free(void *p);
 
 void xcc_error(const char *fmt, ...);

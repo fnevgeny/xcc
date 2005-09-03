@@ -16,9 +16,11 @@ LIBS = $(EXPAT_LIB)
 XCC_XCC = xcc.xcc
 
 BPROG  = bxcc
+B2PROG = b2xcc
 PROG   = xcc
 
 BOBJS  = bxcc.o libexe.o xfile.o
+B2OBJS = b2xcc.o libexe.o xfile.o
 OBJS   = xcc.o libexe.o xfile.o
 
 LOBJS  = libxcc.o
@@ -34,11 +36,16 @@ $(XCCLIB): $(LOBJS)
 
 $(BPROG): $(BOBJS) $(XCCLIB)
 	$(CC) $(LDFLAGS) -o $@ $(BOBJS) $(XCCLIB) $(LIBS)
+$(B2PROG): $(B2OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(B2OBJS) $(XCCLIB) $(LIBS)
 $(PROG): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(XCCLIB) $(LIBS)
 
-xcc.c:  $(XCC_XCC) $(BPROG)
+b2xcc.c:  $(XCC_XCC) $(BPROG)
 	./$(BPROG) -i $(XCC_XCC) -o $@
+
+xcc.c:  $(XCC_XCC) $(B2PROG)
+	./$(B2PROG) -i $(XCC_XCC) -o $@
 
 xcc_t.c:  $(XCC_XCC) $(PROG)
 	./$(PROG) -i $(XCC_XCC) -o $@
@@ -48,8 +55,8 @@ $(BUNDLE_I): xcc.h libxcc.c
 
 clean:
 	rm -f $(BPROG) $(PROG) \
-	$(BOBJS) $(OBJS) $(LOBJS) $(XCCLIB) \
-	xcc.c xcc_t.c $(BUNDLE_I) tags ChangeLog *~ *.bak
+	$(BOBJS) $(B2OBJS) $(OBJS) $(LOBJS) $(XCCLIB) \
+	b2xcc.c xcc.c xcc_t.c $(BUNDLE_I) tags ChangeLog *~ *.bak
 
 install: $(XCCLIB) $(PROG)
 	$(MKINSTALLDIRS) $(bindir)
@@ -77,4 +84,5 @@ libxcc.o: xccP.h xcc.h
 libexe.o: xccP.h xcc.h $(BUNDLE_I) xfile.h
 xfile.o: xfile.h
 bxcc.o: xccP.h xcc.h
+b2xcc.o: xccP.h xcc.h
 xcc.o: xccP.h xcc.h

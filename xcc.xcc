@@ -9,6 +9,9 @@
     <attribute-type name="sval" ctype="char *">
         $$ = xcc_strdup($?);
     </attribute-type>
+    <attribute-type name="ival" ctype="int">
+        $$ = atoi($?);
+    </attribute-type>
 
     <!-- Element types -->
     <element-type name="xcc" ctype="XCC *">
@@ -43,20 +46,20 @@
             $$->prefix = $?;
         </attribute>
         <!-- Child elements -->
-        <child name="preamble">
+        <child name="preamble" maxOccurs="1">
             xcc_string_set($$->preamble, $?->s);
             xcc_string_free($?);
         </child>
         <child name="attribute-type">
             xcc_stack_increment($$->a_types, $?);
         </child>
-        <child name="element-type">
+        <child name="element-type" minOccurs="1">
             xcc_stack_increment($$->e_types, $?);
         </child>
-        <child name="element">
+        <child name="element" minOccurs="1">
             xcc_stack_increment($$->elements, $?);
         </child>
-        <child name="postamble">
+        <child name="postamble" maxOccurs="1">
             xcc_string_set($$->postamble, $?->s);
             xcc_string_free($?);
         </child>
@@ -110,7 +113,7 @@
         <child name="child">
             xcc_stack_increment($$->children, $?);
         </child>
-        <child name="data">
+        <child name="data" maxOccurs="1">
             xcc_string_set($$->data, $?->s);
             xcc_string_free($?);
         </child>
@@ -140,6 +143,12 @@
         <!-- Attributes -->
         <attribute name="name" type="sval">
             $$->name = $?;
+        </attribute>
+        <attribute name="minOccurs" type="ival">
+            $$->minOccurs = $?;
+        </attribute>
+        <attribute name="maxOccurs" type="ival">
+            $$->maxOccurs = $?;
         </attribute>
         <!-- Character data -->
         <data>
