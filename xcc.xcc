@@ -12,6 +12,13 @@
     <attribute-type name="ival" ctype="int">
         $$ = atoi($?);
     </attribute-type>
+    <attribute-type name="bval" ctype="int">
+        if (!strcmp($?, "true")) {
+            $$ = 1;
+        } else {
+            $$ = 0;
+        }
+    </attribute-type>
 
     <!-- Element types -->
     <element-type name="xcc" ctype="XCC *">
@@ -72,10 +79,10 @@
     </element>
     <element name="attribute-type" type="atype">
         <!-- Attributes -->
-        <attribute name="name" type="sval">
+        <attribute name="name" type="sval" required="true">
             $$->name = $?;
         </attribute>
-        <attribute name="ctype" type="sval">
+        <attribute name="ctype" type="sval" required="true">
             $$->ctype = $?;
         </attribute>
         <!-- Character data -->
@@ -85,10 +92,10 @@
     </element>
     <element name="element-type" type="etype">
         <!-- Attributes -->
-        <attribute name="name" type="sval">
+        <attribute name="name" type="sval" required="true">
             $$->name = $?;
         </attribute>
-        <attribute name="ctype" type="sval">
+        <attribute name="ctype" type="sval" required="true">
             $$->ctype = $?;
         </attribute>
         <!-- Character data -->
@@ -98,10 +105,10 @@
     </element>
     <element name="element" type="element">
         <!-- Attributes -->
-        <attribute name="name" type="sval">
+        <attribute name="name" type="sval" required="true">
             $$->name = $?;
         </attribute>
-        <attribute name="type" type="sval">
+        <attribute name="type" type="sval" required="true">
             XCC *xcc = (XCC *) $0;
             $$->etype = get_etype_by_name(xcc->e_types, $?);
             free($?);
@@ -126,13 +133,16 @@
     </element>
     <element name="attribute" type="attribute">
         <!-- Attributes -->
-        <attribute name="name" type="sval">
+        <attribute name="name" type="sval" required="true">
             $$->name = $?;
         </attribute>
-        <attribute name="type" type="sval">
+        <attribute name="type" type="sval" required="true">
             XCC *xcc = (XCC *) $0;
             $$->atype = get_atype_by_name(xcc->a_types, $?);
             free($?);
+        </attribute>
+        <attribute name="required" type="bval">
+            $$->required = $?;
         </attribute>
         <!-- Character data -->
         <data>
@@ -141,7 +151,7 @@
     </element>
     <element name="child" type="child">
         <!-- Attributes -->
-        <attribute name="name" type="sval">
+        <attribute name="name" type="sval" required="true">
             $$->name = $?;
         </attribute>
         <attribute name="minOccurs" type="ival">

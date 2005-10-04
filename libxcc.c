@@ -323,6 +323,9 @@ static int xcc_exception_handler(int ierrno,
     case XCC_EEMAX:
         xcc_error("overrun of occurrences of \"%s\" in the context of \"%s\"", entity, context);
         break;
+    case XCC_EAREQ:
+        xcc_error("required attribute \"%s\" of element \"%s\" is missing", entity, context);
+        break;
     case XCC_EINTR:
         xcc_error("internal error");
         break;

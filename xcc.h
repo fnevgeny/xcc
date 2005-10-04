@@ -59,7 +59,8 @@
 #define XCC_EELEM   3
 #define XCC_EEMIN   4
 #define XCC_EEMAX   5
-#define XCC_EINTR   6
+#define XCC_EAREQ   6
+#define XCC_EINTR   7
 
 /* ------------------- */
 

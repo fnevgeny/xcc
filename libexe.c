@@ -480,11 +480,24 @@ static int output_init_occurrence(const XCC *xcc, FILE *fp)
 
 static int output_start_handler(const XCC *xcc, FILE *fp)
 {
-    int i, n_elements;
+    int i, n_elements, n_attributes, n_attributes_max = 0;
     char *pns_uri, *buf1, *buf2;
+    Element *e;
 
     n_elements = xcc_stack_depth(xcc->elements);
 
+    /* find max number of attributes per element */
+    for (i = 0; i < n_elements; i++) {
+        void *p;
+        
+        xcc_stack_get_data(xcc->elements, i, &p);
+        e = p;
+        n_attributes = xcc_stack_depth(e->attributes);
+        if (n_attributes > n_attributes_max) {
+            n_attributes_max = n_attributes;
+        }
+    }
+    
     fprintf(fp, "static void %s_start_handler(void *data, const char *el, const char **attr)\n",
                 xcc->prefix);  
     fprintf(fp, "{\n");
@@ -492,13 +505,19 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
     fprintf(fp, "    XCCNode *pnode = NULL, *node;\n");
     fprintf(fp, "    XCCEType element;\n");
     fprintf(fp, "    XCCAType attribute;\n");
-    fprintf(fp, "    int i, element_id = -1, parent_id = -1, skip = 0;\n");
+    fprintf(fp, "    int i, element_id = -1, parent_id = -1, skip = 0, askip;\n");
     fprintf(fp, "    const char *avalue;\n");
     fprintf(fp, "    char *aname, *el_local;\n");
+    fprintf(fp, "    char *attribs_required[%d];\n", n_attributes_max);
+    fprintf(fp, "    int nattribs_required = 0;\n");
     fprintf(fp, "\n");
     fprintf(fp, "    if (pdata->error) {\n");
     fprintf(fp, "        return;\n");
     fprintf(fp, "    }\n\n");
+    
+    fprintf(fp, "    memset(attribs_required, 0, %d*sizeof(char *));\n\n",
+        n_attributes_max);
+    
     fprintf(fp, "    pdata->cbuflen = 0;\n");
     fprintf(fp, "    if (pdata->cbufsize) {\n");
     fprintf(fp, "        pdata->cbuffer[0] = '\\0';\n");
@@ -527,9 +546,6 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
     fprintf(fp, "    }\n\n");
 
     fprintf(fp, "    element_id = get_element_id_by_name(el_local);\n");
-
-
-
 
     fprintf(fp, "    if (element_id < 0) {\n");
     fprintf(fp, "        if (pdata->exception_handler(XCC_EELEM, el_local, pnode ? pnode->name:NULL, pdata->udata)) {\n");
@@ -575,10 +591,11 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
 
     fprintf(fp, "    switch (element_id) {\n");
     for (i = 0; i < n_elements; i++) {
-        Element *e;
         void *p;
-        int j, n_attributes, element_id;
+        int j, element_id;
         char ebuf[128], abuf[128];
+        Attribute *a;
+        int nattribs_required = 0;
         
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
@@ -606,13 +623,30 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
         fprintf(fp, "            %s\n", buf1);
         xcc_free(buf1);
         n_attributes = xcc_stack_depth(e->attributes);
+        
+        /* get required attributes and their number */
+        for (j = 0; j < n_attributes; j++) {
+
+            xcc_stack_get_data(e->attributes, j, &p);
+            a = p;
+            
+            if (a->required) {
+                fprintf(fp, "        attribs_required[%d] = %s;\n",
+                    nattribs_required++, print_sharp_name(a->name));
+            }
+        }
+        if (nattribs_required) {
+            fprintf(fp, "        nattribs_required = %d;\n\n",
+                nattribs_required);
+        }
+        
         fprintf(fp, "            for (i = 0; attr[i]; i += 2) {\n");
-        fprintf(fp, "                int askip = 0;\n");
+        fprintf(fp, "                askip = 0;\n");
         fprintf(fp, "                aname  = xcc_get_local(attr[i], %s, &askip);\n",
             pns_uri);
         fprintf(fp, "                avalue = attr[i + 1];\n");
+        nattribs_required = 0;
         for (j = 0; j < n_attributes; j++) {
-            Attribute *a;
             char *pname;
 
             xcc_stack_get_data(e->attributes, j, &p);
@@ -642,6 +676,13 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
             fprintf(fp, "                        %s\n", buf2);
             fprintf(fp, "                }\n");
             xcc_free(buf2);
+            
+            if (a->required) {
+                /* clear 'required' flag */
+                fprintf(fp, "                attribs_required[%d] = NULL;\n",
+                    nattribs_required++);
+            }
+            
             fprintf(fp, "                } else\n");
         }
         fprintf(fp, "                {\n");
@@ -663,6 +704,16 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
 
     fprintf(fp, "    if (skip) {\n");
     fprintf(fp, "        element_id = -1;\n");
+    fprintf(fp, "    } else {\n");
+    fprintf(fp, "        for (i = 0; i < nattribs_required; i++) {\n");
+    fprintf(fp, "            aname = attribs_required[i];\n");
+    fprintf(fp, "            if (aname) {\n");
+    fprintf(fp, "                askip = pdata->exception_handler(XCC_EAREQ, aname, el_local, pdata->udata);\n");
+    fprintf(fp, "                if (!askip) {\n");
+    fprintf(fp, "                    pdata->error = 1;\n");
+    fprintf(fp, "                }\n");
+    fprintf(fp, "            }\n");
+    fprintf(fp, "        }\n");
     fprintf(fp, "    }\n\n");
     
     fprintf(fp, "    node = xcc_node_new();\n");
@@ -936,6 +987,9 @@ int xcc_output_schema(const XCC *xcc, FILE *fp)
 
                 attributes_reset(attrs);
                 attributes_set_sval(attrs, "name", a->name);
+                if (a->required) {
+                    attributes_set_sval(attrs, "use", "required");
+                }
                 xfile_empty_element(xf, "attribute", attrs);
             }
 

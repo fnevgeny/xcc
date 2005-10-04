@@ -75,6 +75,7 @@ typedef struct _Attribute {
     char *name;
     AType *atype;
     char *ccode;
+    int required;
 } Attribute;
 
 typedef struct _Child {
