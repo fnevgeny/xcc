@@ -38,11 +38,11 @@
     </element>
     <element name="book" type="book">
         <!-- Attributes -->
-        <attribute name="publisher" type="sval">
+        <attribute name="publisher" type="sval" required="true">
             $$->publisher = $?;
         </attribute>
         <!-- Child elements -->
-        <child name="title">
+        <child name="title" minOccurs="1" maxOccurs="1">
             $$->title = *$?;
             free($?);
         </child>
@@ -50,7 +50,7 @@
             book_add_author($$, $?);
             free($?);
         </child>
-        <child name="price">
+        <child name="price" maxOccurs="1">
             $$->price = *$?;
             free($?);
         </child>
