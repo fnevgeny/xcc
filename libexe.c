@@ -640,11 +640,11 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
                 nattribs_required);
         }
         
-        fprintf(fp, "            for (i = 0; attr[i]; i += 2) {\n");
-        fprintf(fp, "                askip = 0;\n");
-        fprintf(fp, "                aname  = xcc_get_local(attr[i], %s, &askip);\n",
+        fprintf(fp, "        for (i = 0; attr[i]; i += 2) {\n");
+        fprintf(fp, "            askip = 0;\n");
+        fprintf(fp, "            aname  = xcc_get_local(attr[i], %s, &askip);\n",
             pns_uri);
-        fprintf(fp, "                avalue = attr[i + 1];\n");
+        fprintf(fp, "            avalue = attr[i + 1];\n");
         nattribs_required = 0;
         for (j = 0; j < n_attributes; j++) {
             char *pname;
@@ -653,7 +653,7 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
             a = p;
 
             pname = print_sharp_name(a->name);
-            fprintf(fp, "                if (!strcmp(aname, %s)) {\n", pname);
+            fprintf(fp, "            if (!strcmp(aname, %s)) {\n", pname);
             xcc_free(pname);
             sprintf(abuf, "attribute.%s", a->atype->name);
             buf1 = replace(a->atype->ccode, "$$", abuf);
@@ -683,18 +683,18 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
                     nattribs_required++);
             }
             
-            fprintf(fp, "                } else\n");
+            fprintf(fp, "            } else\n");
         }
-        fprintf(fp, "                {\n");
-        fprintf(fp, "                   if (!askip && pdata->exception_handler(XCC_EATTR, aname, el_local, pdata->udata)) {\n");
-        fprintf(fp, "                       askip = 1;\n");
-        fprintf(fp, "                   }\n");
-        fprintf(fp, "                   if (!askip) {\n");
-        fprintf(fp, "                       pdata->error = 1;\n");
-        fprintf(fp, "                   }\n");
-        fprintf(fp, "                }\n");
-        fprintf(fp, "                xcc_free(aname);\n");
+        fprintf(fp, "            {\n");
+        fprintf(fp, "               if (!askip && pdata->exception_handler(XCC_EATTR, aname, el_local, pdata->udata)) {\n");
+        fprintf(fp, "                   askip = 1;\n");
+        fprintf(fp, "               }\n");
+        fprintf(fp, "               if (!askip) {\n");
+        fprintf(fp, "                   pdata->error = 1;\n");
+        fprintf(fp, "               }\n");
         fprintf(fp, "            }\n");
+        fprintf(fp, "            xcc_free(aname);\n");
+        fprintf(fp, "        }\n");
         fprintf(fp, "        break;\n");
     }
 
