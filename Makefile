@@ -3,9 +3,10 @@ TOP = .
 
 include $(TOP)/Make.conf
 
-bindir = $(PREFIX)/bin
-libdir = $(PREFIX)/lib
-incdir = $(PREFIX)/include
+bindir   = $(PREFIX)/bin
+libdir   = $(PREFIX)/lib
+incdir   = $(PREFIX)/include
+sharedir = $(PREFIX)/share
 
 CPPFLAGS = -I. $(EXPAT_INC)
 CFLAGS = $(DBG_CFLAGS) $(OPT_CFLAGS) $(LNT_CFLAGS)
@@ -63,13 +64,15 @@ clean:
 	$(BOBJS) $(B2OBJS) $(OBJS) $(LOBJS) $(XCCLIB) \
 	b2xcc.c xcc.c xcc_t.c $(BUNDLE_I) tags ChangeLog *~ *.bak
 
-install: $(XCCLIB) $(PROG)
+install: $(XCCLIB) $(PROG) $(SCHEMA)
 	$(MKINSTALLDIRS) $(bindir)
 	$(INSTALL_PROGRAM) -s $(PROG) $(bindir)
 	$(MKINSTALLDIRS) $(libdir)
 	$(INSTALL_DATA) $(XCCLIB) $(libdir)
 	$(MKINSTALLDIRS) $(incdir)
 	$(INSTALL_DATA) xcc.h $(incdir)
+	$(MKINSTALLDIRS) $(sharedir)/xcc
+	$(INSTALL_DATA) $(SCHEMA) $(sharedir)/xcc
 
 uninstall:
 	rm -f $(bindir)/$(PROG)
