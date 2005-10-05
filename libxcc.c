@@ -47,12 +47,11 @@ char *xcc_get_version_string(void)
 void xcc_error(const char *fmt, ...)
 {
     va_list ap;
-    char new_fmt[128];
-    sprintf(new_fmt, "xcc: %s\n", fmt);
 
     va_start(ap, fmt);
-    
-    vfprintf(stderr, new_fmt, ap);
+    fputs("xcc: ", stderr);
+    vfprintf(stderr, fmt, ap);
+    fputc('\n', stderr);
     va_end(ap);
 }
 
