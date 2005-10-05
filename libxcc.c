@@ -71,7 +71,7 @@ void *xcc_malloc(size_t size)
         if (p) {
             return p;
         } else {
-            fprintf(stderr, "Memory exhausted\n");
+            xcc_error("memory exhausted");
             abort();
         }
     }
@@ -387,7 +387,7 @@ int xcc_run(FILE *fp, void **root, void *udata,
         done = feof(fp);
 
         if (!XML_Parse(xp, Buff, len, done)) {
-            fprintf(stderr, "Parse error at line %d:\n%s\n",
+            xcc_error("parse error at line %d:\n\t%s",
 	            XML_GetCurrentLineNumber(xp),
 	            XML_ErrorString(XML_GetErrorCode(xp)));
             pdata.error = 1;

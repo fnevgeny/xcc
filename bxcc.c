@@ -247,7 +247,7 @@ int main(int argc, char * const argv[]) {
     
     xp = XML_ParserCreate(NULL);
     if (!xp) {
-        fprintf(stderr, "Couldn't allocate memory for parser\n");
+        xcc_error("couldn't allocate memory for parser");
         exit(-1);
     }
 
@@ -277,13 +277,13 @@ int main(int argc, char * const argv[]) {
 
         len = fread(Buff, 1, XCC_BUFFSIZE, xopts.ifp);
         if (ferror(xopts.ifp)) {
-            fprintf(stderr, "Read error\n");
+            xcc_error("read error");
             exit(1);
         }
         done = feof(xopts.ifp);
 
         if (!XML_Parse(xp, Buff, len, done)) {
-            fprintf(stderr, "Parse error at line %d:\n%s\n",
+            xcc_error("parse error at line %d:\n\t%s",
 	            XML_GetCurrentLineNumber(xp),
 	            XML_ErrorString(XML_GetErrorCode(xp)));
             exit(1);

@@ -1061,7 +1061,7 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
         xopts->ifp = fopen(xopts->ifile, "r");
     }
     if (!xopts->ifp) {
-        fprintf(stderr, "Can't open input stream\n");
+        xcc_error("can't open input stream");
         return XCC_RETURN_FAILURE;
     }
     
@@ -1071,7 +1071,7 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
         xopts->ofp = fopen(xopts->ofile, "wb");
     }
     if (!xopts->ofp) {
-        fprintf(stderr, "Can't open output stream\n");
+        xcc_error("can't open output stream");
         return XCC_RETURN_FAILURE;
     }
     
