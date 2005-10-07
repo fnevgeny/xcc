@@ -1,3 +1,12 @@
+New with 0.5.0, released 2005-10-05:
+
+    * Implemented defining and run-time checking of cardinality of elements
+      and attributes.
+    * Implemented output of W3C XML schema.
+    * Fixed potential buffer overflow.
+    * Miscellaneous fixes.
+
+
 New with 0.4.0, released 2005-07-26:
 
     * xcc_parse() is now dynamically generated, and may be optionally
@@ -8,7 +17,7 @@ New with 0.4.0, released 2005-07-26:
       for an element.
     * [BB] Don't declare an empty XCCAType if there are no
       attributes.
-    * [BB] Add the element name to the case labels in end_handler().
+    * [BB] Added element name to the case labels in end_handler().
 
 
 New with 0.3.4, released 2005-07-04:
