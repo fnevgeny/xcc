@@ -631,8 +631,11 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
             a = p;
             
             if (a->required) {
+                char *pname = print_sharp_name(a->name);
+
                 fprintf(fp, "        attribs_required[%d] = %s;\n",
-                    nattribs_required++, print_sharp_name(a->name));
+                    nattribs_required++, pname);
+                xcc_free(pname);
             }
         }
         if (nattribs_required) {
