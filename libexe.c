@@ -243,6 +243,9 @@ static int output_atype_union(const XCC *xcc, FILE *fp)
             fprintf(fp, "    %s %s;\n", atype->ctype, atype->name);
         }
         fprintf(fp, "} XCCAType;\n\n");
+    } else {
+        /* We don't any have attributes */
+        fprintf(fp, "typedef void *XCCAType;\n");
     }
     
     return XCC_RETURN_SUCCESS;
@@ -504,19 +507,23 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
     fprintf(fp, "    XCCParserData *pdata = (XCCParserData *) data;\n");
     fprintf(fp, "    XCCNode *pnode = NULL, *node;\n");
     fprintf(fp, "    XCCEType element;\n");
-    fprintf(fp, "    XCCAType attribute;\n");
     fprintf(fp, "    int i, element_id = -1, parent_id = -1, skip = 0, askip;\n");
     fprintf(fp, "    const char *avalue;\n");
     fprintf(fp, "    char *aname, *el_local;\n");
-    fprintf(fp, "    char *attribs_required[%d];\n", n_attributes_max);
-    fprintf(fp, "    int nattribs_required = 0;\n");
+    if (n_attributes_max > 0) {
+        fprintf(fp, "    XCCAType attribute;\n");
+        fprintf(fp, "    char *attribs_required[%d];\n", n_attributes_max);
+        fprintf(fp, "    int nattribs_required = 0;\n");
+    }
     fprintf(fp, "\n");
     fprintf(fp, "    if (pdata->error) {\n");
     fprintf(fp, "        return;\n");
     fprintf(fp, "    }\n\n");
     
-    fprintf(fp, "    memset(attribs_required, 0, %d*sizeof(char *));\n\n",
-        n_attributes_max);
+    if (n_attributes_max > 0) {
+        fprintf(fp, "    memset(attribs_required, 0, %d*sizeof(char *));\n\n",
+            n_attributes_max);
+    }
     
     fprintf(fp, "    pdata->cbuflen = 0;\n");
     fprintf(fp, "    if (pdata->cbufsize) {\n");
@@ -630,7 +637,7 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
             xcc_stack_get_data(e->attributes, j, &p);
             a = p;
             
-            if (a->required) {
+            if (a->required && n_attributes_max > 0) {
                 char *pname = print_sharp_name(a->name);
 
                 fprintf(fp, "        attribs_required[%d] = %s;\n",
@@ -680,7 +687,7 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
             fprintf(fp, "                }\n");
             xcc_free(buf2);
             
-            if (a->required) {
+            if (a->required && n_attributes_max > 0) {
                 /* clear 'required' flag */
                 fprintf(fp, "                attribs_required[%d] = NULL;\n",
                     nattribs_required++);
@@ -707,18 +714,20 @@ static int output_start_handler(const XCC *xcc, FILE *fp)
 
     fprintf(fp, "    if (skip) {\n");
     fprintf(fp, "        element_id = -1;\n");
-    fprintf(fp, "    } else {\n");
-    fprintf(fp, "        for (i = 0; i < nattribs_required; i++) {\n");
-    fprintf(fp, "            aname = attribs_required[i];\n");
-    fprintf(fp, "            if (aname) {\n");
-    fprintf(fp, "                askip = pdata->exception_handler(XCC_EAREQ, aname, el_local, pdata->udata);\n");
-    fprintf(fp, "                if (!askip) {\n");
-    fprintf(fp, "                    pdata->error = 1;\n");
-    fprintf(fp, "                }\n");
-    fprintf(fp, "            }\n");
-    fprintf(fp, "        }\n");
-    fprintf(fp, "    }\n\n");
-    
+    fprintf(fp, "    }\n");
+    if (n_attributes_max > 0) {
+        fprintf(fp, "    else {\n");
+        fprintf(fp, "        for (i = 0; i < nattribs_required; i++) {\n");
+        fprintf(fp, "            aname = attribs_required[i];\n");
+        fprintf(fp, "            if (aname) {\n");
+        fprintf(fp, "                askip = pdata->exception_handler(XCC_EAREQ, aname, el_local, pdata->udata);\n");
+        fprintf(fp, "                if (!askip) {\n");
+        fprintf(fp, "                    pdata->error = 1;\n");
+        fprintf(fp, "                }\n");
+        fprintf(fp, "            }\n");
+        fprintf(fp, "        }\n");
+        fprintf(fp, "    }\n\n");
+    }
     fprintf(fp, "    node = xcc_node_new();\n");
     fprintf(fp, "    node->name = el_local;\n");
     fprintf(fp, "    node->id = element_id;\n");
@@ -748,9 +757,9 @@ static int output_end_handler(const XCC *xcc, FILE *fp)
     fprintf(fp, "    XCCNode *node, *pnode;\n");
     fprintf(fp, "    void *p;\n");
     fprintf(fp, "    int element_id, parent_id, parent_child, skip = 0;\n");
-
     fprintf(fp, "    XCCEType element, pelement;\n");
     fprintf(fp, "    char *cdata = pdata->cbuffer;\n\n");
+
     fprintf(fp, "    if (pdata->error) {\n");
     fprintf(fp, "        return;\n");
     fprintf(fp, "    }\n\n");
