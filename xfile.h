@@ -81,11 +81,6 @@ int attributes_reset(Attributes *attrs);
 int attributes_set_sval(Attributes *attrs, const char *name, const char *value);
 int attributes_set_bval(Attributes *attrs, const char *name, int bval);
 int attributes_set_ival(Attributes *attrs, const char *name, int ival);
-int attributes_set_ival_formatted(Attributes *attrs, const char *name,
-    int ival, char *format);
-int attributes_set_dval(Attributes *attrs, const char *name, double dval);
-int attributes_set_dval_formatted(Attributes *attrs, const char *name,
-    double dval, char *format);
 
 int attributes_set_ns(Attributes *attrs, const char *ns, const char *uri);
 

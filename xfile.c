@@ -218,43 +218,6 @@ int attributes_set_ival(Attributes *attrs, const char *name, int ival)
     return attributes_set_sval(attrs, name, value);
 }
 
-int attributes_set_ival_formatted(Attributes *attrs, const char *name,
-    int ival, char *format)
-{
-    if (format) {
-        char value[128];
-        
-        sprintf(value, format, ival);
-
-        return attributes_set_sval(attrs, name, value);
-    } else {
-        return attributes_set_ival(attrs, name, ival);
-    }
-}
-
-int attributes_set_dval(Attributes *attrs, const char *name, double dval)
-{
-    char value[32];
-    
-    sprintf(value, "%g", dval);
-    
-    return attributes_set_sval(attrs, name, value);
-}
-
-int attributes_set_dval_formatted(Attributes *attrs, const char *name,
-    double dval, char *format)
-{
-    if (format) {
-        char value[128];
-        
-        sprintf(value, format, dval);
-
-        return attributes_set_sval(attrs, name, value);
-    } else {
-        return attributes_set_dval(attrs, name, dval);
-    }
-}
-
 int attributes_set_ns(Attributes *attrs, const char *ns, const char *uri)
 {
     int retval = XCC_RETURN_SUCCESS;
