@@ -51,7 +51,7 @@ xcc.c:  $(XCC_XCC) $(B2PROG)
 	./$(B2PROG) -i $(XCC_XCC) -o $@
 
 xcc_t.c:  $(XCC_XCC) $(PROG)
-	./$(PROG) -i $(XCC_XCC) -o $@
+	./$(PROG) -i $(XCC_XCC) | sed '/^#line/s/stdout/xcc.c/g' > $@
 
 $(BUNDLE_I): xcc.h libxcc.c
 	./c2cstr.sh xcc.h libxcc.c > $@
