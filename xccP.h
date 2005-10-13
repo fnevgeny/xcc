@@ -28,6 +28,8 @@
 
 #include "xcc.h"
 
+#define XCC_CHARBUFFSIZE    128
+
 typedef struct _XCC {
     XCCStack *a_types;
     XCCStack *e_types;
