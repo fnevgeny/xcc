@@ -264,32 +264,47 @@ static int output_bundle(XCC *xcc)
 }
 
 
+static int dump_code_chunk(XCC *xcc, int line, const char *chunk)
+{
+    /* Safety check */
+    if (!xcc) {
+        return XCC_RETURN_FAILURE;
+    }
+    
+    if (!chunk) {
+        /* Nothing to output */
+        return XCC_RETURN_SUCCESS;
+    }
+    
+    if (!xcc->opts->nolines) {
+        dump(xcc, "#line %d \"%s\"\n", line, xcc->opts->ifile);
+    }
+    dump(xcc, "%s\n", chunk);
+    if (!xcc->opts->nolines) {
+        dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
+    }
+
+    return XCC_RETURN_SUCCESS;
+}
+
+static int dump_code(XCC *xcc, const XCCCode *code)
+{
+    /* Safety check */
+    if (!code) {
+        return XCC_RETURN_FAILURE;
+    } else {
+        return dump_code_chunk(xcc, code->line, code->string);
+    }
+}
+
 static int output_preamble(XCC *xcc)
 {
-    if (xcc->preamble->string) {
-        if (!xcc->opts->nolines) {
-            dump(xcc, "#line %d \"%s\"\n", xcc->preamble->line, xcc->opts->ifile);
-        }
-        dump(xcc, "%s\n", xcc->preamble->string);
-        if (!xcc->opts->nolines) {
-            dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-        }
-    }
-    return XCC_RETURN_SUCCESS;
+    return dump_code(xcc, xcc->preamble);
 }
 
 static int output_postamble(XCC *xcc)
 {
-    if (xcc->postamble->string) {
-        if (!xcc->opts->nolines) {
-            dump(xcc, "#line %d \"%s\"\n", xcc->postamble->line, xcc->opts->ifile);
-        }
-        dump(xcc, "%s\n", xcc->postamble->string);
-        if (!xcc->opts->nolines) {
-            dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-        }
-    }
-    return XCC_RETURN_SUCCESS;
+    return dump_code(xcc, xcc->postamble);
 }
 
 static int output_atype_union(XCC *xcc)
@@ -697,14 +712,10 @@ static int output_start_handler(XCC *xcc)
             buf1 = replace(buf2, "$P", "pnode->data");
         }
         xcc_free(buf2);
-        if (!xcc->opts->nolines) {
-            dump(xcc, "#line %d \"%s\"\n", e->etype->code->line, xcc->opts->ifile);
-        }
-        dump(xcc, "            %s\n", buf1);
-        if (!xcc->opts->nolines) {
-            dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-        }
+        
+        dump_code_chunk(xcc, e->etype->code->line, buf1);
         xcc_free(buf1);
+        
         n_attributes = xcc_stack_depth(e->attributes);
         
         /* get required attributes and their number */
@@ -753,15 +764,10 @@ static int output_start_handler(XCC *xcc)
             xcc_free(buf2);
             buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
             xcc_free(buf1);
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", a->atype->code->line, xcc->opts->ifile);
-            }
-            dump(xcc, "                    %s\n", buf2);
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-            }
 
+            dump_code_chunk(xcc, a->atype->code->line, buf2);
             xcc_free(buf2);
+
             buf1 = replace(a->code->string, "$$", ebuf);
             buf2 = replace(buf1, "$?", abuf);
             xcc_free(buf1);
@@ -770,15 +776,11 @@ static int output_start_handler(XCC *xcc)
             buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
             xcc_free(buf1);
             dump(xcc, "                {\n");
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", a->code->line, xcc->opts->ifile);
-            }
-            dump(xcc, "                        %s\n", buf2);
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-            }
-            dump(xcc, "                }\n");
+
+            dump_code_chunk(xcc, a->code->line, buf2);
             xcc_free(buf2);
+
+            dump(xcc, "                }\n");
             
             if (a->required && n_attributes_max > 0) {
                 /* clear 'required' flag */
@@ -882,15 +884,11 @@ static int output_end_handler(XCC *xcc)
             dump(xcc, "        {\n");
             buf1 = replace(e->code->string, "$$", ebuf);
             buf2 = replace(buf1, "$?", "cdata");
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", e->code->line, xcc->opts->ifile);
-            }
-            dump(xcc, "            %s\n", buf2);
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-            }
             xcc_free(buf1);
+
+            dump_code_chunk(xcc, e->code->line, buf2);
             xcc_free(buf2);
+
             dump(xcc, "        }\n");
             dump(xcc, "        break;\n");
         }
@@ -970,14 +968,10 @@ static int output_end_handler(XCC *xcc)
             xcc_free(buf2);
             buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
             xcc_free(buf1);
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", c->code->line, xcc->opts->ifile);
-            }
-            dump(xcc, "        %s\n", buf2);
-            if (!xcc->opts->nolines) {
-                dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-            }
+
+            dump_code_chunk(xcc, c->code->line, buf2);
             xcc_free(buf2);
+
             dump(xcc, "        }\n");
             dump(xcc, "        break;\n");
         }
