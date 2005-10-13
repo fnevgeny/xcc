@@ -256,6 +256,7 @@ static int output_bundle(XCC *xcc)
     while ((s = bundle_str[i])) {
         fputs(s, xcc->opts->ofp);
         fputc('\n', xcc->opts->ofp);
+        xcc->currentLine++;
         i++;
     }
     
