@@ -30,36 +30,16 @@
 
 #define XCC_CHARBUFFSIZE    128
 
-typedef struct _XCC {
-    XCCStack *a_types;
-    XCCStack *e_types;
-    XCCStack *elements;
-    XCCString *preamble;
-    XCCString *postamble;
-    char *ns_uri;
-    char *prefix;
-} XCC;
-
-typedef struct {
-    char *ifile;
-    char *ofile;
-    FILE *ifp;
-    FILE *ofp;
-    int  bundle;
-    int  schema;
-} XCCOpts;
-
-
 typedef struct _AType {
     char *name;
     char *ctype;
-    char *ccode;
+    XCCCode *code;
 } AType;
 
 typedef struct _EType {
     char *name;
     char *ctype;
-    char *ccode;
+    XCCCode *code;
 } EType;
 
 typedef struct _Element {
@@ -69,20 +49,20 @@ typedef struct _Element {
     XCCStack *children;
     EType *parent_etype;
     int same_parents;
-    XCCString *data;
+    XCCCode *code;
     int id;
 } Element;
 
 typedef struct _Attribute {
     char *name;
     AType *atype;
-    char *ccode;
+    XCCCode *code;
     int required;
 } Attribute;
 
 typedef struct _Child {
     char *name;
-    char *ccode;
+    XCCCode *code;
     unsigned int minOccurs;
     unsigned int maxOccurs;
 } Child;
@@ -104,6 +84,9 @@ void attribute_free(Attribute *a);
 Child *child_new(void);
 void child_free(Child *c);
 
+XCCCode *xcc_code_new(void);
+void xcc_code_free(XCCCode *code);
+
 void xcc_node_free(XCCNode *n);
 
 XCCStack *xcc_stack_new(XCC_stack_data_free data_free);
@@ -117,7 +100,7 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 XCC *xcc_xcc_new(void);
 void xcc_xcc_free(XCC *xcc);
 
-int xcc_output_parser(const XCC *xcc, FILE *fp, int bundle);
+int xcc_output_parser(XCC *xcc);
 
 int xcc_output_schema(const XCC *xcc, FILE *fp);
 

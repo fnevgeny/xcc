@@ -91,15 +91,6 @@ char *xcc_strdup(const char *s)
     return ret;
 }
 
-static unsigned int xcc_strlen(const char *s)
-{
-    if (s) {
-        return strlen(s);
-    } else {
-        return 0;
-    }
-}
-
 XCCStack *xcc_stack_new(XCC_stack_data_free data_free)
 {
     XCCStack *xs = xcc_malloc(sizeof(XCCStack));
@@ -200,38 +191,6 @@ int xcc_stack_depth(const XCCStack *xs)
     return xs->depth;
 }
 
-
-XCCString *xcc_string_new(void)
-{
-    XCCString *xstr;
-    
-    xstr = xcc_malloc(sizeof(XCCString));
-    if (xstr) {
-        xstr->s = NULL;
-        xstr->length = 0;
-    }
-    
-    return xstr;
-}
-
-void xcc_string_free(XCCString *xstr)
-{
-    if (xstr) {
-        xcc_free(xstr->s);
-        xcc_free(xstr);
-    }
-}
-
-int xcc_string_set(XCCString *xstr, const char *s)
-{
-    if (xstr) {
-        xcc_free(xstr->s);
-        xstr->s = xcc_strdup(s);
-        xstr->length = xcc_strlen(xstr->s);
-    }
-    
-    return XCC_RETURN_SUCCESS;
-}
 
 XCCNode *xcc_node_new(void)
 {
@@ -360,6 +319,7 @@ int xcc_run(FILE *fp, void **root, void *udata,
     pdata.root     = NULL;
     
     pdata.udata    = udata;
+    pdata.parser  = xp;
 
     if (exception_handler) {
         pdata.exception_handler = exception_handler;

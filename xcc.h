@@ -71,6 +71,17 @@ typedef void (*XCC_stack_data_free)(void *data);
 typedef int (*XCCExceptionHandler)(int ierrno,
     const char *entity, const char *context, void *udata);
 
+typedef struct {
+    char *ifile;
+    char *ofile;
+    FILE *ifp;
+    FILE *ofp;
+    int  bundle;
+    int  schema;
+    int  nolines;
+    int  include;
+} XCCOpts;
+
 typedef struct _XCCStack {
     unsigned int size;
     unsigned int depth;
@@ -78,17 +89,31 @@ typedef struct _XCCStack {
     XCC_stack_data_free data_free;
 } XCCStack;
 
-typedef struct _XCCString {
-    unsigned int length;
-    char *s;
-} XCCString;
-
 typedef struct _XCCElementEntry {
     int key;
     char *name;
 } XCCElementEntry;
 
+typedef struct _XCCCode {
+    char *string;
+    unsigned int line;
+} XCCCode; 
+
+typedef struct _XCC {
+    XCCStack *a_types;
+    XCCStack *e_types;
+    XCCStack *elements;
+    XCCCode *preamble;
+    XCCCode *postamble;
+    char *ns_uri;
+    char *prefix;
+    XCCOpts *opts;
+    unsigned int currentLine;
+} XCC;
+
 typedef struct _XCCParserData {
+    XCC *xcc;
+
     int error;
     
     char *cbuffer;
@@ -101,6 +126,9 @@ typedef struct _XCCParserData {
     void *udata;
     
     XCCExceptionHandler exception_handler;
+
+    XML_Parser parser;
+
 } XCCParserData;
 
 typedef struct {
@@ -129,10 +157,6 @@ int xcc_stack_increment(XCCStack *xs, const void *data);
 int xcc_stack_decrement(XCCStack *xs);
 int xcc_stack_get_last(const XCCStack *xs, void **data);
 int xcc_stack_depth(const XCCStack *xs);
-
-XCCString *xcc_string_new(void);
-void xcc_string_free(XCCString *xstr);
-int xcc_string_set(XCCString *xstr, const char *s);
 
 XCCNode *xcc_node_new(void);
 

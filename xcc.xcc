@@ -23,24 +23,31 @@
     <!-- Element types -->
     <element-type name="xcc" ctype="XCC *">
         $$ = xcc_xcc_new();
+        pdata->xcc = $$;
     </element-type>
-    <element-type name="string" ctype="XCCString *">
-        $$ = xcc_string_new();
+    <element-type name="code" ctype="XCCCode *">
+        $$ = xcc_code_new();
+        $$->line = XML_GetCurrentLineNumber(pdata->parser);
     </element-type>
     <element-type name="atype" ctype="AType *">
         $$ = atype_new();
+        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
     </element-type>
     <element-type name="etype" ctype="EType *">
         $$ = etype_new();
+        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
     </element-type>
     <element-type name="element" ctype="Element *">
         $$ = element_new();
+        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
     </element-type>
     <element-type name="attribute" ctype="Attribute *">
         $$ = attribute_new();
+        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
     </element-type>
     <element-type name="child" ctype="Child *">
         $$ = child_new();
+        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
     </element-type>
 
     <!-- Elements -->
@@ -54,8 +61,8 @@
         </attribute>
         <!-- Child elements -->
         <child name="preamble" maxOccurs="1">
-            xcc_string_set($$->preamble, $?->s);
-            xcc_string_free($?);
+            xcc_code_free($$->preamble);
+            $$->preamble = $?;
         </child>
         <child name="attribute-type">
             xcc_stack_increment($$->a_types, $?);
@@ -67,14 +74,14 @@
             xcc_stack_increment($$->elements, $?);
         </child>
         <child name="postamble" maxOccurs="1">
-            xcc_string_set($$->postamble, $?->s);
-            xcc_string_free($?);
+            xcc_code_free($$->postamble);
+            $$->postamble = $?;
         </child>
     </element>
-    <element name="preamble" type="string">
+    <element name="preamble" type="code">
         <!-- Character data -->
         <data>
-            xcc_string_set($$, $?);
+            $$->string = xcc_strdup($?);
         </data>
     </element>
     <element name="attribute-type" type="atype">
@@ -87,7 +94,7 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xcc_strdup($?);
+            $$->code->string = xcc_strdup($?);
         </data>
     </element>
     <element name="element-type" type="etype">
@@ -100,7 +107,7 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xcc_strdup($?);
+            $$->code->string = xcc_strdup($?);
         </data>
     </element>
     <element name="element" type="element">
@@ -121,14 +128,14 @@
             xcc_stack_increment($$->children, $?);
         </child>
         <child name="data" maxOccurs="1">
-            xcc_string_set($$->data, $?->s);
-            xcc_string_free($?);
+	    xcc_code_free($$->code);
+            $$->code = $?;
         </child>
     </element>
-    <element name="postamble" type="string">
+    <element name="postamble" type="code">
         <!-- Character data -->
         <data>
-            xcc_string_set($$, $?);
+            $$->string = xcc_strdup($?);
         </data>
     </element>
     <element name="attribute" type="attribute">
@@ -146,7 +153,7 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xcc_strdup($?);
+            $$->code->string = xcc_strdup($?);
         </data>
     </element>
     <element name="child" type="child">
@@ -162,13 +169,13 @@
         </attribute>
         <!-- Character data -->
         <data>
-            $$->ccode = xcc_strdup($?);
+            $$->code->string = xcc_strdup($?);
         </data>
     </element>
-    <element name="data" type="string">
+    <element name="data" type="code">
         <!-- Character data -->
         <data>
-            xcc_string_set($$, $?);
+            $$->string = xcc_strdup($?);
         </data>
     </element>
 
@@ -197,12 +204,14 @@ int main(int argc, char * const argv[])
     if (!xcc->prefix) {
         xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
     }
+
+    xcc->opts = &xopts;
     
     /* generate the parser */
     if (xopts.schema) {
         xcc_output_schema(xcc, xopts.ofp);
     } else {
-        xcc_output_parser(xcc, xopts.ofp, xopts.bundle);
+        xcc_output_parser(xcc);
     }
 
     /* free allocated storage */

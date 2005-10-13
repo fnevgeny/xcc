@@ -45,7 +45,7 @@ $(PROG): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(XCCLIB) $(LIBS)
 
 b2xcc.c:  $(XCC_XCC) $(BPROG)
-	./$(BPROG) -i $(XCC_XCC) -o $@
+	./$(BPROG) -l -i $(XCC_XCC) -o $@
 
 xcc.c:  $(XCC_XCC) $(B2PROG)
 	./$(B2PROG) -i $(XCC_XCC) -o $@

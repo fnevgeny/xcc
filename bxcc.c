@@ -37,6 +37,7 @@ typedef struct _bParserData {
     char *cbuffer;
     int cbufsize;
     int cbuflen;
+	XML_Parser parser;
 } bParserData;
 
 
@@ -180,13 +181,13 @@ static void end(void *data, const char *el) {
         AType *atype;
         xcc_stack_get_last(pdata->xcc->a_types, &p);
         atype = p;
-        atype->ccode = xcc_strdup(pdata->cbuffer);
+        atype->code->string = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "element-type")) {
         EType *etype;
         xcc_stack_get_last(pdata->xcc->e_types, &p);
         etype = p;
-        etype->ccode = xcc_strdup(pdata->cbuffer);
+        etype->code->string = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "attribute")) {
         Element *e;
@@ -195,7 +196,7 @@ static void end(void *data, const char *el) {
         e = p;
         xcc_stack_get_last(e->attributes, &p);
         a = p;
-        a->ccode = xcc_strdup(pdata->cbuffer);
+        a->code->string = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "child")) {
         Element *e;
@@ -204,20 +205,20 @@ static void end(void *data, const char *el) {
         e = p;
         xcc_stack_get_last(e->children, &p);
         c = p;
-        c->ccode = xcc_strdup(pdata->cbuffer);
+        c->code->string = xcc_strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "data")) {
         Element *e;
         xcc_stack_get_last(pdata->xcc->elements, &p);
         e = p;
-        xcc_string_set(e->data, pdata->cbuffer);
+        e->code->string =  strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "preamble")) {
-        xcc_string_set(pdata->xcc->preamble, pdata->cbuffer);
+        pdata->xcc->preamble->string = strdup(pdata->cbuffer);
     } else
     if (!strcmp(el, "postamble")) {
-        xcc_string_set(pdata->xcc->postamble, pdata->cbuffer);
-    }
+        pdata->xcc->postamble->string = strdup(pdata->cbuffer);
+	}
     
     pdata->cbuflen = 0;
 }
@@ -257,12 +258,14 @@ int main(int argc, char * const argv[]) {
     }
 
     /* Set user data */
-    pdata.xcc      = xcc_xcc_new();
+    pdata.xcc       = xcc_xcc_new();
     
-    pdata.cbuffer  = NULL;
-    pdata.cbufsize = 0;
-    pdata.cbuflen  = 0;
- 
+    pdata.cbuffer   = NULL;
+    pdata.cbufsize  = 0;
+    pdata.cbuflen   = 0;
+    pdata.parser    = xp;
+    pdata.xcc->opts = &xopts;
+
     XML_SetUserData(xp, (void *) &pdata);
 
     XML_SetElementHandler(xp, start, end);
@@ -296,7 +299,7 @@ int main(int argc, char * const argv[]) {
     
     pdata.xcc->prefix = xcc_strdup(XCC_DEFAULT_PREFIX);
     
-    xcc_output_parser(pdata.xcc, xopts.ofp, xopts.bundle);
+    xcc_output_parser(pdata.xcc);
     
     exit(0);
 }
