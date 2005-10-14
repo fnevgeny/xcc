@@ -129,7 +129,7 @@ void xcc_xcc_free(XCC *xcc);
 
 int xcc_output_parser(XCC *xcc);
 
-int xcc_output_schema(const XCC *xcc, FILE *fp);
+int xcc_output_schema(const XCC *xcc);
 
 int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[]);
 

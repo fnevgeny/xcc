@@ -1044,8 +1044,9 @@ int xcc_output_parser(XCC *xcc)
     return XCC_RETURN_SUCCESS;
 }
 
-int xcc_output_schema(const XCC *xcc, FILE *fp)
+int xcc_output_schema(const XCC *xcc)
 {
+    FILE *fp = xcc->opts->ofp;
     XFile *xf = xfile_new(fp);
     Attributes *attrs = attributes_new();
     int i, n_elements;

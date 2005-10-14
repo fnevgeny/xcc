@@ -208,7 +208,7 @@ int main(int argc, char * const argv[])
     
     /* generate the parser */
     if (xopts.schema) {
-        xcc_output_schema(xcc, xopts.ofp);
+        xcc_output_schema(xcc);
     } else {
         xcc_output_parser(xcc);
     }
