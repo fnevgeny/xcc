@@ -23,7 +23,6 @@
     <!-- Element types -->
     <element-type name="xcc" ctype="XCC *">
         $$ = xcc_xcc_new();
-        pdata->xcc = $$;
     </element-type>
     <element-type name="code" ctype="XCCCode *">
         $$ = xcc_code_new();

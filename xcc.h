@@ -71,17 +71,6 @@ typedef void (*XCC_stack_data_free)(void *data);
 typedef int (*XCCExceptionHandler)(int ierrno,
     const char *entity, const char *context, void *udata);
 
-typedef struct {
-    char *ifile;
-    char *ofile;
-    FILE *ifp;
-    FILE *ofp;
-    int  bundle;
-    int  schema;
-    int  nolines;
-    int  include;
-} XCCOpts;
-
 typedef struct _XCCStack {
     unsigned int size;
     unsigned int depth;
@@ -94,26 +83,7 @@ typedef struct _XCCElementEntry {
     char *name;
 } XCCElementEntry;
 
-typedef struct _XCCCode {
-    char *string;
-    unsigned int line;
-} XCCCode; 
-
-typedef struct _XCC {
-    XCCStack *a_types;
-    XCCStack *e_types;
-    XCCStack *elements;
-    XCCCode *preamble;
-    XCCCode *postamble;
-    char *ns_uri;
-    char *prefix;
-    XCCOpts *opts;
-    unsigned int currentLine;
-} XCC;
-
 typedef struct _XCCParserData {
-    XCC *xcc;
-
     int error;
     
     char *cbuffer;

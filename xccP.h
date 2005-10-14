@@ -30,6 +30,33 @@
 
 #define XCC_CHARBUFFSIZE    128
 
+typedef struct _XCCCode {
+    char *string;
+    unsigned int line;
+} XCCCode;
+
+typedef struct {
+    char *ifile;
+    char *ofile;
+    FILE *ifp;
+    FILE *ofp;
+    int  bundle;
+    int  schema;
+    int  nolines;
+} XCCOpts;
+
+typedef struct _XCC {
+    XCCStack *a_types;
+    XCCStack *e_types;
+    XCCStack *elements;
+    XCCCode *preamble;
+    XCCCode *postamble;
+    char *ns_uri;
+    char *prefix;
+    XCCOpts *opts;
+    unsigned int currentLine;
+} XCC;
+
 typedef struct _AType {
     char *name;
     char *ctype;
