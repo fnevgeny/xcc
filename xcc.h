@@ -48,7 +48,7 @@
 
 #define XCC_STACK_CHUNK_SIZE  16
 
-#define XCC_BUFFSIZE	    8192
+#define XCC_BUFFSIZE        8192
 
 #define XCC_DEFAULT_PREFIX    "xcc"
 

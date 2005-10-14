@@ -348,8 +348,8 @@ int xcc_run(FILE *fp, void **root, void *udata,
 
         if (!XML_Parse(xp, Buff, len, done)) {
             xcc_error("parse error at line %d:\n\t%s",
-	            XML_GetCurrentLineNumber(xp),
-	            XML_ErrorString(XML_GetErrorCode(xp)));
+                XML_GetCurrentLineNumber(xp),
+                XML_ErrorString(XML_GetErrorCode(xp)));
             pdata.error = 1;
             break;
         }

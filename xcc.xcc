@@ -127,7 +127,7 @@
             xcc_stack_increment($$->children, $?);
         </child>
         <child name="data" maxOccurs="1">
-	    xcc_code_free($$->code);
+            xcc_code_free($$->code);
             $$->code = $?;
         </child>
     </element>

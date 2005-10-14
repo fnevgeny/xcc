@@ -37,7 +37,6 @@ typedef struct _bParserData {
     char *cbuffer;
     int cbufsize;
     int cbuflen;
-	XML_Parser parser;
 } bParserData;
 
 
@@ -218,7 +217,7 @@ static void end(void *data, const char *el) {
     } else
     if (!strcmp(el, "postamble")) {
         pdata->xcc->postamble->string = strdup(pdata->cbuffer);
-	}
+    }
     
     pdata->cbuflen = 0;
 }
@@ -263,7 +262,6 @@ int main(int argc, char * const argv[]) {
     pdata.cbuffer   = NULL;
     pdata.cbufsize  = 0;
     pdata.cbuflen   = 0;
-    pdata.parser    = xp;
     pdata.xcc->opts = &xopts;
 
     XML_SetUserData(xp, (void *) &pdata);
@@ -287,8 +285,8 @@ int main(int argc, char * const argv[]) {
 
         if (!XML_Parse(xp, Buff, len, done)) {
             xcc_error("parse error at line %d:\n\t%s",
-	            XML_GetCurrentLineNumber(xp),
-	            XML_ErrorString(XML_GetErrorCode(xp)));
+                XML_GetCurrentLineNumber(xp),
+                XML_ErrorString(XML_GetErrorCode(xp)));
             exit(1);
         }
 
