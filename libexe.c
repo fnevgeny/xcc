@@ -264,91 +264,6 @@ static int output_bundle(XCC *xcc)
 }
 
 
-static int dump_code_chunk(XCC *xcc, int line, const char *chunk)
-{
-    /* Safety check */
-    if (!xcc) {
-        return XCC_RETURN_FAILURE;
-    }
-    
-    if (!chunk) {
-        /* Nothing to output */
-        return XCC_RETURN_SUCCESS;
-    }
-    
-    if (!xcc->opts->nolines) {
-        dump(xcc, "#line %d \"%s\"\n", line, xcc->opts->ifile);
-    }
-    dump(xcc, "%s\n", chunk);
-    if (!xcc->opts->nolines) {
-        dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
-    }
-
-    return XCC_RETURN_SUCCESS;
-}
-
-static int dump_code(XCC *xcc, const XCCCode *code)
-{
-    /* Safety check */
-    if (!code) {
-        return XCC_RETURN_FAILURE;
-    } else {
-        return dump_code_chunk(xcc, code->line, code->string);
-    }
-}
-
-static int output_preamble(XCC *xcc)
-{
-    return dump_code(xcc, xcc->preamble);
-}
-
-static int output_postamble(XCC *xcc)
-{
-    return dump_code(xcc, xcc->postamble);
-}
-
-static int output_atype_union(XCC *xcc)
-{
-    int i, n_atypes;
-    
-    n_atypes = xcc_stack_depth(xcc->a_types);
-    if (n_atypes > 0) {
-        dump(xcc, "typedef union {\n");
-        for (i = 0; i < n_atypes; i++) {
-            AType *atype;
-            void *p;
-            xcc_stack_get_data(xcc->a_types, i, &p);
-            atype = p;
-            dump(xcc, "    %s %s;\n", atype->ctype, atype->name);
-        }
-        dump(xcc, "} XCCAType;\n\n");
-    } else {
-        /* We don't any have attributes */
-        dump(xcc, "typedef void *XCCAType;\n");
-    }
-    
-    return XCC_RETURN_SUCCESS;
-}
-
-static int output_etype_union(XCC *xcc)
-{
-    int i, n_etypes;
-    
-    n_etypes = xcc_stack_depth(xcc->e_types);
-    dump(xcc, "typedef union {\n");
-    for (i = 0; i < n_etypes; i++) {
-        EType *etype;
-        void *p;
-        xcc_stack_get_data(xcc->e_types, i, &p);
-        etype = p;
-        dump(xcc, "    %s %s;\n", etype->ctype, etype->name);
-    }
-    dump(xcc, "    void * unicast;\n");
-    dump(xcc, "} XCCEType;\n\n");
-    
-    return XCC_RETURN_SUCCESS;
-}
-
 static char *replace(const char *str, const char *f, const char *r)
 {
     int inlen, outlen, flen, rlen, diff;
@@ -398,12 +313,41 @@ static char *replace(const char *str, const char *f, const char *r)
     return retval;
 }
 
-static char *replaceVA(const char *str, ...)
+static int dump_code_chunk(XCC *xcc, int line, const char *chunk)
 {
-    va_list var;
-    char *f, *r, *buf1 = xcc_strdup(str), *buf2;
+    /* Safety check */
+    if (!xcc) {
+        return XCC_RETURN_FAILURE;
+    }
     
-    va_start(var, str);
+    if (!chunk) {
+        /* Nothing to output */
+        return XCC_RETURN_SUCCESS;
+    }
+    
+    if (!xcc->opts->nolines) {
+        dump(xcc, "#line %d \"%s\"\n", line, xcc->opts->ifile);
+    }
+    dump(xcc, "%s\n", chunk);
+    if (!xcc->opts->nolines) {
+        dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
+    }
+
+    return XCC_RETURN_SUCCESS;
+}
+
+static int dump_code(XCC *xcc, const XCCCode *code, ...)
+{
+    int res;
+    va_list var;
+    char *f, *r, *buf1 = xcc_strdup(code->string), *buf2;
+
+    /* Safety check */
+    if (!code) {
+        return XCC_RETURN_FAILURE;
+    }
+    
+    va_start(var, code);
     while ((f = va_arg(var, char *)) != NULL) {
         r = va_arg(var, char *);
         buf2 = replace(buf1, f, r);
@@ -412,7 +356,62 @@ static char *replaceVA(const char *str, ...)
     }
     va_end(var);
     
-    return buf1;
+    res = dump_code_chunk(xcc, code->line, buf1);
+    xcc_free(buf1);
+    
+    return res;
+}
+
+static int output_preamble(XCC *xcc)
+{
+    return dump_code(xcc, xcc->preamble, NULL);
+}
+
+static int output_postamble(XCC *xcc)
+{
+    return dump_code(xcc, xcc->postamble, NULL);
+}
+
+static int output_atype_union(XCC *xcc)
+{
+    int i, n_atypes;
+    
+    n_atypes = xcc_stack_depth(xcc->a_types);
+    if (n_atypes > 0) {
+        dump(xcc, "typedef union {\n");
+        for (i = 0; i < n_atypes; i++) {
+            AType *atype;
+            void *p;
+            xcc_stack_get_data(xcc->a_types, i, &p);
+            atype = p;
+            dump(xcc, "    %s %s;\n", atype->ctype, atype->name);
+        }
+        dump(xcc, "} XCCAType;\n\n");
+    } else {
+        /* We don't any have attributes */
+        dump(xcc, "typedef void *XCCAType;\n");
+    }
+    
+    return XCC_RETURN_SUCCESS;
+}
+
+static int output_etype_union(XCC *xcc)
+{
+    int i, n_etypes;
+    
+    n_etypes = xcc_stack_depth(xcc->e_types);
+    dump(xcc, "typedef union {\n");
+    for (i = 0; i < n_etypes; i++) {
+        EType *etype;
+        void *p;
+        xcc_stack_get_data(xcc->e_types, i, &p);
+        etype = p;
+        dump(xcc, "    %s %s;\n", etype->ctype, etype->name);
+    }
+    dump(xcc, "    void * unicast;\n");
+    dump(xcc, "} XCCEType;\n\n");
+    
+    return XCC_RETURN_SUCCESS;
 }
 
 static char *print_sharp_name(const char *name)
@@ -580,7 +579,7 @@ static int output_init_occurrence(XCC *xcc)
 static int output_start_handler(XCC *xcc)
 {
     int i, n_elements, n_attributes, n_attributes_max = 0;
-    char *pns_uri, *buf1;
+    char *pns_uri;
     Element *e;
 
     n_elements = xcc_stack_depth(xcc->elements);
@@ -728,14 +727,11 @@ static int output_start_handler(XCC *xcc)
             strcpy(pbuf, "pnode->data");
         }
 
-        buf1 = replaceVA(e->etype->code->string,
+        dump_code(xcc, e->etype->code,
             "$$", ebuf,
             "$U", "pdata->udata",
             "$P", pbuf,
             NULL);
-        
-        dump_code_chunk(xcc, e->etype->code->line, buf1);
-        xcc_free(buf1);
         
         n_attributes = xcc_stack_depth(e->attributes);
         
@@ -780,25 +776,20 @@ static int output_start_handler(XCC *xcc)
                     __FUNCTION__, __LINE__);
                 exit(1);
             }
-            buf1 = replaceVA(a->atype->code->string,
+            dump_code(xcc, a->atype->code,
                 "$$", abuf,
                 "$?", "avalue",
                 "$U", "pdata->udata",
                 "$0", "xcc_get_root(pdata)",
                 NULL);
-            dump_code_chunk(xcc, a->atype->code->line, buf1);
-            xcc_free(buf1);
 
-            buf1 = replaceVA(a->code->string,
+            dump(xcc, "                {\n");
+            dump_code(xcc, a->code,
                 "$$", ebuf,
                 "$?", abuf,
                 "$U", "pdata->udata",
                 "$0", "xcc_get_root(pdata)",
                 NULL);
-
-            dump(xcc, "                {\n");
-            dump_code_chunk(xcc, a->code->line, buf1);
-            xcc_free(buf1);
             dump(xcc, "                }\n");
             
             if (a->required && n_attributes_max > 0) {
@@ -859,7 +850,6 @@ static int output_start_handler(XCC *xcc)
 static int output_end_handler(XCC *xcc)
 {
     int i, n_elements;
-    char *buf1;
     char pbuf[XCC_CHARBUFFSIZE], ebuf[XCC_CHARBUFFSIZE];
 
     n_elements = xcc_stack_depth(xcc->elements);
@@ -902,14 +892,10 @@ static int output_end_handler(XCC *xcc)
             element_id  = e->id;
             dump(xcc, "    case %d: /* %s */\n", element_id, e->name);
             dump(xcc, "        {\n");
-            
-            buf1 = replaceVA(e->code->string,
+            dump_code(xcc, e->code,
                 "$$", ebuf,
                 "$?", "cdata",
                 NULL);
-            dump_code_chunk(xcc, e->code->line, buf1);
-            xcc_free(buf1);
-
             dump(xcc, "        }\n");
             dump(xcc, "        break;\n");
         }
@@ -984,17 +970,12 @@ static int output_end_handler(XCC *xcc)
             }
             dump(xcc, "    case %d:\n", n_elements*parent_id + ce->id);
             dump(xcc, "        {\n");
-            
-            buf1 = replaceVA(c->code->string,
+            dump_code(xcc, c->code,
                 "$$", pbuf,
                 "$?", ebuf,
                 "$U", "pdata->udata",
                 "$0", "xcc_get_root(pdata)",
                 NULL);
-
-            dump_code_chunk(xcc, c->code->line, buf1);
-            xcc_free(buf1);
-
             dump(xcc, "        }\n");
             dump(xcc, "        break;\n");
         }
