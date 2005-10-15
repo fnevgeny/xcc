@@ -729,6 +729,7 @@ static int output_start_handler(XCC *xcc)
 
         dump_code(xcc, e->etype->code,
             "$$", ebuf,
+            "$X", "pdata",
             "$U", "pdata->udata",
             "$P", pbuf,
             NULL);
@@ -779,6 +780,7 @@ static int output_start_handler(XCC *xcc)
             dump_code(xcc, a->atype->code,
                 "$$", abuf,
                 "$?", "avalue",
+                "$X", "pdata",
                 "$U", "pdata->udata",
                 "$0", "xcc_get_root(pdata)",
                 NULL);
@@ -787,6 +789,7 @@ static int output_start_handler(XCC *xcc)
             dump_code(xcc, a->code,
                 "$$", ebuf,
                 "$?", abuf,
+                "$X", "pdata",
                 "$U", "pdata->udata",
                 "$0", "xcc_get_root(pdata)",
                 NULL);
@@ -895,6 +898,7 @@ static int output_end_handler(XCC *xcc)
             dump_code(xcc, e->code,
                 "$$", ebuf,
                 "$?", "cdata",
+                "$X", "pdata",
                 NULL);
             dump(xcc, "        }\n");
             dump(xcc, "        break;\n");
@@ -973,6 +977,7 @@ static int output_end_handler(XCC *xcc)
             dump_code(xcc, c->code,
                 "$$", pbuf,
                 "$?", ebuf,
+                "$X", "pdata",
                 "$U", "pdata->udata",
                 "$0", "xcc_get_root(pdata)",
                 NULL);
