@@ -18,7 +18,7 @@ BOOKSOBJS = books.o libbooks.o
 
 all: $(BOOKS)
 
-books.c: books.xcc
+books.c: books.xcc $(XCC)
 	$(XCC) -i $< -o $@
 
 $(BOOKS): $(BOOKSOBJS) $(XCCLIB)
