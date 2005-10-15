@@ -132,7 +132,8 @@ XCCNode *xcc_node_new(void);
 
 char *xcc_get_local(const char *name, const char *ns_uri, int *skip);
 
-void *xcc_get_root(XCCParserData *pdata);
+void *xcc_get_root(const XCCParserData *pdata);
+int xcc_get_linenum(const XCCParserData *pdata);
 
 int xcc_run(FILE *fp, void **root, void *udata,
               XML_StartElementHandler start_element_handler,

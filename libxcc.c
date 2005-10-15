@@ -227,7 +227,7 @@ char *xcc_get_local(const char *name, const char *ns_uri, int *skip)
     return local_name;
 }
 
-void *xcc_get_root(XCCParserData *pdata)
+void *xcc_get_root(const XCCParserData *pdata)
 {
     void *p;
     if (xcc_stack_get_data(pdata->nodes, 0, &p) != XCC_RETURN_SUCCESS) {
@@ -235,6 +235,15 @@ void *xcc_get_root(XCCParserData *pdata)
     } else {
         XCCNode *node = p;
         return node->data;
+    }
+}
+
+int xcc_get_linenum(const XCCParserData *pdata)
+{
+    if (pdata && pdata->parser) {
+        return XML_GetCurrentLineNumber(pdata->parser);
+    } else {
+        return -1;
     }
 }
 
@@ -319,7 +328,7 @@ int xcc_run(FILE *fp, void **root, void *udata,
     pdata.root     = NULL;
     
     pdata.udata    = udata;
-    pdata.parser  = xp;
+    pdata.parser   = xp;
 
     if (exception_handler) {
         pdata.exception_handler = exception_handler;
