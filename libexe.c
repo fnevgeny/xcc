@@ -231,7 +231,7 @@ static void dump(XCC *xcc, const char *fmt, ...)
     va_end(ap);
     if (ret < 0 || ret >= len + 1) {
         xcc_error("dump() failed");
-        abort();
+        exit(1);
     }
     fputs(buf, fp);
     for (i = 0; buf[i] != 0; i++) {
@@ -691,10 +691,11 @@ static int output_start_handler(XCC *xcc)
             return XCC_RETURN_FAILURE;
         }
 
-        if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", e->etype->name) >= XCC_CHARBUFFSIZE) {
-            xcc_error("warning: element name \"%s\" truncated in func %s line %d\n",
-                       e->etype->name, __FUNCTION__, __LINE__);
-            ebuf[XCC_CHARBUFFSIZE - 1] = '\0';
+        if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", e->etype->name)
+            >= XCC_CHARBUFFSIZE) {
+            xcc_error("snprintf() failed in func %s line %d",
+                __FUNCTION__, __LINE__);
+            exit(1);
         }
         
         dump(xcc, "    case %d: /* %s */\n", element_id, e->name);
@@ -703,9 +704,11 @@ static int output_start_handler(XCC *xcc)
         xcc_free(buf1);
         if (e->parent_etype) {
             char buf[XCC_CHARBUFFSIZE];
-            if (snprintf(buf, XCC_CHARBUFFSIZE, "((%s) pnode->data)", e->parent_etype->ctype) >= XCC_CHARBUFFSIZE) {
-                xcc_error("warning: string truncated in func %s line %d\n", __FUNCTION__, __LINE__);
-                buf[XCC_CHARBUFFSIZE - 1] = '\0';
+            if (snprintf(buf, XCC_CHARBUFFSIZE, "((%s) pnode->data)",
+                e->parent_etype->ctype) >= XCC_CHARBUFFSIZE) {
+                xcc_error("snprintf() failed in func %s line %d",
+                    __FUNCTION__, __LINE__);
+                exit(1);
             }
             buf1 = replace(buf2, "$P", buf);
         } else {
@@ -752,10 +755,11 @@ static int output_start_handler(XCC *xcc)
             pname = print_sharp_name(a->name);
             dump(xcc, "                if (!strcmp(aname, %s)) {\n", pname);
             xcc_free(pname);
-            if (snprintf(abuf, XCC_CHARBUFFSIZE, "attribute.%s", a->atype->name) >= XCC_CHARBUFFSIZE) {
-                xcc_error("warning: string \"attribute.%s\" truncated in func %s line %d\n",
-                          a->atype->name, __FUNCTION__, __LINE__);
-                abuf[XCC_CHARBUFFSIZE - 1] = '\0';
+            if (snprintf(abuf, XCC_CHARBUFFSIZE, "attribute.%s", a->atype->name)
+                >= XCC_CHARBUFFSIZE) {
+                xcc_error("snprintf() failed in func %s line %d",
+                    __FUNCTION__, __LINE__);
+                exit(1);
             }
             buf1 = replace(a->atype->code->string, "$$", abuf);
             buf2 = replace(buf1, "$?", "avalue");
@@ -873,10 +877,11 @@ static int output_end_handler(XCC *xcc)
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
         if (e->code->string != NULL) {
-            if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", e->etype->name) >= XCC_CHARBUFFSIZE) {
-                xcc_error("warning: string \"element.%s\" truncated in func %s line %d\n",
-                          e->etype->name, __FUNCTION__, __LINE__);
-                ebuf[XCC_CHARBUFFSIZE - 1] = '\0';
+            if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", e->etype->name)
+                >= XCC_CHARBUFFSIZE) {
+                xcc_error("snprintf() failed in func %s line %d",
+                    __FUNCTION__, __LINE__);
+                exit(1);
             }
 
             element_id  = e->id;
@@ -939,10 +944,11 @@ static int output_end_handler(XCC *xcc)
         e = p;
         parent_id  = e->id;
         n_children = xcc_stack_depth(e->children);
-        if (snprintf(pbuf, XCC_CHARBUFFSIZE, "pelement.%s", e->etype->name) >= XCC_CHARBUFFSIZE) {
-            xcc_error("warning: string \"pelement.%s\" truncated in func %s line %d\n",
-                      e->etype->name, __FUNCTION__, __LINE__);
-            pbuf[XCC_CHARBUFFSIZE - 1] = '\0';
+        if (snprintf(pbuf, XCC_CHARBUFFSIZE, "pelement.%s", e->etype->name)
+            >= XCC_CHARBUFFSIZE) {
+            xcc_error("snprintf() failed in func %s line %d",
+                __FUNCTION__, __LINE__);
+            exit(1);
         }
         for (j = 0; j < n_children; j++) {
             Child *c;
@@ -954,10 +960,11 @@ static int output_end_handler(XCC *xcc)
                 xcc_error("couldn't find definition for element %s", c->name);
                 return XCC_RETURN_FAILURE;
             }
-            if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", ce->etype->name) >= XCC_CHARBUFFSIZE) {
-                xcc_error("warning: string \"element.%s\" truncated in func %s line %d\n",
-                          ce->etype->name, __FUNCTION__, __LINE__);
-                ebuf[XCC_CHARBUFFSIZE - 1] = '\0';
+            if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", ce->etype->name)
+                >= XCC_CHARBUFFSIZE) {
+                xcc_error("snprintf() failed in func %s line %d",
+                    __FUNCTION__, __LINE__);
+                exit(1);
             }
             dump(xcc, "    case %d:\n", n_elements*parent_id + ce->id);
             dump(xcc, "        {\n");
@@ -1062,10 +1069,11 @@ int xcc_output_schema(const XCC *xcc)
 
     xfile_begin(xf, 1, NULL, NULL, "schema", attrs);
 
-    if (snprintf(buf, XCC_CHARBUFFSIZE, "Generated by %s", xcc_get_version_string()) >= XCC_CHARBUFFSIZE) {
-        xcc_error("warning: line truncated in func %s line %d\n",
-                  __FUNCTION__, __LINE__);
-        buf[XCC_CHARBUFFSIZE - 1] = '\0';
+    if (snprintf(buf, XCC_CHARBUFFSIZE, "Generated by %s",
+        xcc_get_version_string()) >= XCC_CHARBUFFSIZE) {
+        xcc_error("snprintf() failed in func %s line %d",
+            __FUNCTION__, __LINE__);
+        exit(1);
     }
     xfile_comment(xf, buf);
 
