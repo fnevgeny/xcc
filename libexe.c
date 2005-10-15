@@ -401,20 +401,18 @@ static char *replace(const char *str, const char *f, const char *r)
 static char *replaceVA(const char *str, ...)
 {
     va_list var;
-    char *f, *r, *buf1 = (char *) str, *buf2 = NULL;
+    char *f, *r, *buf1 = xcc_strdup(str), *buf2;
     
     va_start(var, str);
     while ((f = va_arg(var, char *)) != NULL) {
         r = va_arg(var, char *);
         buf2 = replace(buf1, f, r);
-        if (buf1 != str) {
-            xcc_free(buf1);
-        }
+        xcc_free(buf1);
         buf1 = buf2;
     }
     va_end(var);
     
-    return buf2;
+    return buf1;
 }
 
 static char *print_sharp_name(const char *name)
