@@ -398,6 +398,25 @@ static char *replace(const char *str, const char *f, const char *r)
     return retval;
 }
 
+static char *replaceVA(const char *str, ...)
+{
+    va_list var;
+    char *f, *r, *buf1 = (char *) str, *buf2 = NULL;
+    
+    va_start(var, str);
+    while ((f = va_arg(var, char *)) != NULL) {
+        r = va_arg(var, char *);
+        buf2 = replace(buf1, f, r);
+        if (buf1 != str) {
+            xcc_free(buf1);
+        }
+        buf1 = buf2;
+    }
+    va_end(var);
+    
+    return buf2;
+}
+
 static char *print_sharp_name(const char *name)
 {
     char *pname;
@@ -563,7 +582,7 @@ static int output_init_occurrence(XCC *xcc)
 static int output_start_handler(XCC *xcc)
 {
     int i, n_elements, n_attributes, n_attributes_max = 0;
-    char *pns_uri, *buf1, *buf2;
+    char *pns_uri, *buf1;
     Element *e;
 
     n_elements = xcc_stack_depth(xcc->elements);
@@ -678,7 +697,8 @@ static int output_start_handler(XCC *xcc)
     for (i = 0; i < n_elements; i++) {
         void *p;
         int j, element_id;
-        char ebuf[XCC_CHARBUFFSIZE], abuf[XCC_CHARBUFFSIZE];
+        char ebuf[XCC_CHARBUFFSIZE], abuf[XCC_CHARBUFFSIZE],
+            pbuf[XCC_CHARBUFFSIZE];
         Attribute *a;
         int nattribs_required = 0;
         
@@ -699,22 +719,22 @@ static int output_start_handler(XCC *xcc)
         }
         
         dump(xcc, "    case %d: /* %s */\n", element_id, e->name);
-        buf1 = replace(e->etype->code->string, "$$", ebuf);
-        buf2 = replace(buf1, "$U", "pdata->udata");
-        xcc_free(buf1);
         if (e->parent_etype) {
-            char buf[XCC_CHARBUFFSIZE];
-            if (snprintf(buf, XCC_CHARBUFFSIZE, "((%s) pnode->data)",
+            if (snprintf(pbuf, XCC_CHARBUFFSIZE, "((%s) pnode->data)",
                 e->parent_etype->ctype) >= XCC_CHARBUFFSIZE) {
                 xcc_error("snprintf() failed in func %s line %d",
                     __FUNCTION__, __LINE__);
                 exit(1);
             }
-            buf1 = replace(buf2, "$P", buf);
         } else {
-            buf1 = replace(buf2, "$P", "pnode->data");
+            strcpy(pbuf, "pnode->data");
         }
-        xcc_free(buf2);
+
+        buf1 = replaceVA(e->etype->code->string,
+            "$$", ebuf,
+            "$U", "pdata->udata",
+            "$P", pbuf,
+            NULL);
         
         dump_code_chunk(xcc, e->etype->code->line, buf1);
         xcc_free(buf1);
@@ -755,35 +775,32 @@ static int output_start_handler(XCC *xcc)
             pname = print_sharp_name(a->name);
             dump(xcc, "                if (!strcmp(aname, %s)) {\n", pname);
             xcc_free(pname);
+
             if (snprintf(abuf, XCC_CHARBUFFSIZE, "attribute.%s", a->atype->name)
                 >= XCC_CHARBUFFSIZE) {
                 xcc_error("snprintf() failed in func %s line %d",
                     __FUNCTION__, __LINE__);
                 exit(1);
             }
-            buf1 = replace(a->atype->code->string, "$$", abuf);
-            buf2 = replace(buf1, "$?", "avalue");
-            xcc_free(buf1);
-            buf1 = replace(buf2, "$U", "pdata->udata");
-            xcc_free(buf2);
-            buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
+            buf1 = replaceVA(a->atype->code->string,
+                "$$", abuf,
+                "$?", "avalue",
+                "$U", "pdata->udata",
+                "$0", "xcc_get_root(pdata)",
+                NULL);
+            dump_code_chunk(xcc, a->atype->code->line, buf1);
             xcc_free(buf1);
 
-            dump_code_chunk(xcc, a->atype->code->line, buf2);
-            xcc_free(buf2);
+            buf1 = replaceVA(a->code->string,
+                "$$", ebuf,
+                "$?", abuf,
+                "$U", "pdata->udata",
+                "$0", "xcc_get_root(pdata)",
+                NULL);
 
-            buf1 = replace(a->code->string, "$$", ebuf);
-            buf2 = replace(buf1, "$?", abuf);
-            xcc_free(buf1);
-            buf1 = replace(buf2, "$U", "pdata->udata");
-            xcc_free(buf2);
-            buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
-            xcc_free(buf1);
             dump(xcc, "                {\n");
-
-            dump_code_chunk(xcc, a->code->line, buf2);
-            xcc_free(buf2);
-
+            dump_code_chunk(xcc, a->code->line, buf1);
+            xcc_free(buf1);
             dump(xcc, "                }\n");
             
             if (a->required && n_attributes_max > 0) {
@@ -844,7 +861,7 @@ static int output_start_handler(XCC *xcc)
 static int output_end_handler(XCC *xcc)
 {
     int i, n_elements;
-    char *buf1, *buf2;
+    char *buf1;
     char pbuf[XCC_CHARBUFFSIZE], ebuf[XCC_CHARBUFFSIZE];
 
     n_elements = xcc_stack_depth(xcc->elements);
@@ -887,12 +904,13 @@ static int output_end_handler(XCC *xcc)
             element_id  = e->id;
             dump(xcc, "    case %d: /* %s */\n", element_id, e->name);
             dump(xcc, "        {\n");
-            buf1 = replace(e->code->string, "$$", ebuf);
-            buf2 = replace(buf1, "$?", "cdata");
+            
+            buf1 = replaceVA(e->code->string,
+                "$$", ebuf,
+                "$?", "cdata",
+                NULL);
+            dump_code_chunk(xcc, e->code->line, buf1);
             xcc_free(buf1);
-
-            dump_code_chunk(xcc, e->code->line, buf2);
-            xcc_free(buf2);
 
             dump(xcc, "        }\n");
             dump(xcc, "        break;\n");
@@ -968,16 +986,16 @@ static int output_end_handler(XCC *xcc)
             }
             dump(xcc, "    case %d:\n", n_elements*parent_id + ce->id);
             dump(xcc, "        {\n");
-            buf1 = replace(c->code->string, "$$", pbuf);
-            buf2 = replace(buf1, "$?", ebuf);
-            xcc_free(buf1);
-            buf1 = replace(buf2, "$U", "pdata->udata");
-            xcc_free(buf2);
-            buf2 = replace(buf1, "$0", "xcc_get_root(pdata)");
-            xcc_free(buf1);
+            
+            buf1 = replaceVA(c->code->string,
+                "$$", pbuf,
+                "$?", ebuf,
+                "$U", "pdata->udata",
+                "$0", "xcc_get_root(pdata)",
+                NULL);
 
-            dump_code_chunk(xcc, c->code->line, buf2);
-            xcc_free(buf2);
+            dump_code_chunk(xcc, c->code->line, buf1);
+            xcc_free(buf1);
 
             dump(xcc, "        }\n");
             dump(xcc, "        break;\n");
