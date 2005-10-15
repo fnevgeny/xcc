@@ -26,27 +26,27 @@
     </element-type>
     <element-type name="code" ctype="XCCCode *">
         $$ = xcc_code_new();
-        $$->line = XML_GetCurrentLineNumber(pdata->parser);
+        $$->line = xcc_get_linenum($X);
     </element-type>
     <element-type name="atype" ctype="AType *">
         $$ = atype_new();
-        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
+        $$->code->line = xcc_get_linenum($X);
     </element-type>
     <element-type name="etype" ctype="EType *">
         $$ = etype_new();
-        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
+        $$->code->line = xcc_get_linenum($X);
     </element-type>
     <element-type name="element" ctype="Element *">
         $$ = element_new();
-        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
+        $$->code->line = xcc_get_linenum($X);
     </element-type>
     <element-type name="attribute" ctype="Attribute *">
         $$ = attribute_new();
-        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
+        $$->code->line = xcc_get_linenum($X);
     </element-type>
     <element-type name="child" ctype="Child *">
         $$ = child_new();
-        $$->code->line = XML_GetCurrentLineNumber(pdata->parser);
+        $$->code->line = xcc_get_linenum($X);
     </element-type>
 
     <!-- Elements -->
