@@ -185,6 +185,7 @@ int main(int argc, char * const argv[])
     XCC *xcc;
     XCCOpts xopts;
     void *p;
+    int res;
 
     memset(&xopts, 0, sizeof(XCCOpts));
     
@@ -193,7 +194,7 @@ int main(int argc, char * const argv[])
     }
 
     if (xcc_parse(xopts.ifp, &p, NULL, NULL) != XCC_RETURN_SUCCESS) {
-        xcc_error("Failed parsing input");
+        xcc_error("failed parsing input");
         exit(1);
     }
     
@@ -208,9 +209,9 @@ int main(int argc, char * const argv[])
     
     /* generate the parser */
     if (xopts.schema) {
-        xcc_output_schema(xcc);
+        res = xcc_output_schema(xcc);
     } else {
-        xcc_output_parser(xcc);
+        res = xcc_output_parser(xcc);
     }
 
     /* free allocated storage */
@@ -220,7 +221,13 @@ int main(int argc, char * const argv[])
     fclose(xopts.ifp);
     fclose(xopts.ofp);
         
-    exit(0);
+    if (res != XCC_RETURN_SUCCESS) {
+        xcc_error("failed generating output");
+        exit(1);
+    } else {
+        exit(0);
+    }
+
 }
     ]]></postamble>
 </parser>
