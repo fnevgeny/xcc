@@ -8,6 +8,8 @@ libdir   = $(PREFIX)/lib
 incdir   = $(PREFIX)/include
 sharedir = $(PREFIX)/share
 
+docdir	 = $(sharedir)/doc/xcc
+
 CPPFLAGS = -I. $(EXPAT_INC)
 CFLAGS = $(DBG_CFLAGS) $(OPT_CFLAGS) $(LNT_CFLAGS)
 LDFLAGS =
@@ -17,6 +19,7 @@ LIBS = $(EXPAT_LIB)
 XCC_XCC = xcc.xcc
 
 SCHEMA = xcc.xsd
+DOCS   = README NEWS AUTHORS TODO
 
 BPROG  = bxcc
 B2PROG = b2xcc
@@ -65,19 +68,22 @@ clean:
 	b2xcc.c xcc.c xcc_t.c $(BUNDLE_I) tags ChangeLog *~ *.bak
 
 install: $(XCCLIB) $(PROG) $(SCHEMA)
-	$(MKINSTALLDIRS) $(bindir)
-	$(INSTALL_PROGRAM) -s $(PROG) $(bindir)
-	$(MKINSTALLDIRS) $(libdir)
-	$(INSTALL_DATA) $(XCCLIB) $(libdir)
-	$(MKINSTALLDIRS) $(incdir)
-	$(INSTALL_DATA) xcc.h $(incdir)
-	$(MKINSTALLDIRS) $(sharedir)/xcc
-	$(INSTALL_DATA) $(SCHEMA) $(sharedir)/xcc
+	$(MKINSTALLDIRS) $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) -s $(PROG) $(DESTDIR)$(bindir)
+	$(MKINSTALLDIRS) $(DESTDIR)$(libdir)
+	$(INSTALL_DATA) $(XCCLIB) $(DESTDIR)$(libdir)
+	$(MKINSTALLDIRS) $(DESTDIR)$(incdir)
+	$(INSTALL_DATA) xcc.h $(DESTDIR)$(incdir)
+	$(MKINSTALLDIRS) $(DESTDIR)$(sharedir)/xcc
+	$(INSTALL_DATA) $(SCHEMA) $(DESTDIR)$(sharedir)/xcc
+	$(MKINSTALLDIRS) $(DESTDIR)$(docdir)
+	$(INSTALL_DATA) $(DOCS) $(DESTDIR)$(docdir)
 
 uninstall:
-	rm -f $(bindir)/$(PROG)
-	rm -f $(libdir)/$(XCCLIB)
-	rm -f $(incdir)/xcc.h
+	rm -f $(DESTDIR)$(bindir)/$(PROG)
+	rm -f $(DESTDIR)$(libdir)/$(XCCLIB)
+	rm -f $(DESTDIR)$(incdir)/xcc.h
+	rm -rf $(DESTDIR)$(docdir)
 
 check: xcc_t.c xcc.c
 	@echo -n "Testing self-consistency ... "
