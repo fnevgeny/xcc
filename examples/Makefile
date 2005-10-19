@@ -12,20 +12,25 @@ LIBS = $(XCCLIB) $(EXPAT_LIB)
 
 XCC = $(TOP)/xcc
 
+SCHEMA = books.xsd
+
 BOOKS  = books
 
 BOOKSOBJS = books.o libbooks.o
 
-all: $(BOOKS)
+all: $(BOOKS) $(SCHEMA)
 
 books.c: books.xcc $(XCC)
 	$(XCC) -i $< -o $@
+
+$(SCHEMA): books.xcc $(XCC)
+	$(XCC) -i $< -s -o $@
 
 $(BOOKS): $(BOOKSOBJS) $(XCCLIB)
 	$(CC) $(LDFLAGS) -o $@ $(BOOKSOBJS) $(LIBS)
 
 clean:
-	rm -f $(BOOKS) $(BOOKSOBJS) books.c
+	rm -f $(BOOKS) $(BOOKSOBJS) books.c $(SCHEMA)
 
 install: 
 
