@@ -1,3 +1,14 @@
+New with 0.5.1, released 2005-10-20:
+
+    * [BB] Added #line directives to the generated source. Can be disabled
+      with the "-l" switch.
+    * [BB] Honour DESTDIR during installation.
+    * [BB] Fixed possible buffer overflows.
+    * [BB] Fixed code generation when the input doesn't use attributes.
+    * [BB] A memory leak fixed.
+    * Code clean ups.
+
+
 New with 0.5.0, released 2005-10-05:
 
     * Implemented defining and run-time checking of cardinality of elements
