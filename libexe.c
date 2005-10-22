@@ -144,6 +144,7 @@ void attribute_free(Attribute *a)
     if (a) {
         xcc_free(a->name);
         xcc_code_free(a->code);
+        xcc_free(a->defaultv);
         xcc_free(a);
     }
 }
@@ -596,9 +597,10 @@ static int output_start_handler(XCC *xcc)
         }
     }
     
-    dump(xcc, "static void %s_start_handler(void *data, const char *el, const char **attr)\n",
+    dump(xcc, "static void %s_start_handler(void *data, const char *el, const char **attr_in)\n",
                 xcc->prefix);  
     dump(xcc, "{\n");
+    dump(xcc, "    char **attr;\n");
     dump(xcc, "    XCCParserData *pdata = (XCCParserData *) data;\n");
     dump(xcc, "    XCCNode *pnode = NULL, *node;\n");
     dump(xcc, "    XCCEType element;\n");
@@ -608,15 +610,19 @@ static int output_start_handler(XCC *xcc)
     if (n_attributes_max > 0) {
         dump(xcc, "    XCCAType attribute;\n");
         dump(xcc, "    char *attribs_required[%d];\n", n_attributes_max);
+        dump(xcc, "    char *attr_extra[%d];\n", 2*n_attributes_max);
         dump(xcc, "    int nattribs_required = 0;\n");
+        dump(xcc, "    int nattribs_implied  = 0;\n");
     }
     dump(xcc, "    if (pdata->error) {\n");
     dump(xcc, "        return;\n");
     dump(xcc, "    }\n\n");
 
     if (n_attributes_max > 0) {
-        dump(xcc, "    memset(attribs_required, 0, %d*sizeof(char *));\n\n",
+        dump(xcc, "    memset(attribs_required, 0, %d*sizeof(char *));\n",
             n_attributes_max);
+        dump(xcc, "    memset(attr_extra, 0, %d*sizeof(char *));\n\n",
+            2*n_attributes_max);
     }
     
     dump(xcc, "    pdata->cbuflen = 0;\n");
@@ -697,11 +703,11 @@ static int output_start_handler(XCC *xcc)
         char ebuf[XCC_CHARBUFFSIZE], abuf[XCC_CHARBUFFSIZE],
             pbuf[XCC_CHARBUFFSIZE];
         Attribute *a;
-        int nattribs_required = 0;
+        int nattribs_required = 0, nattribs_implied = 0;
         
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
-        element_id  = e->id;
+        element_id = e->id;
 
         if (!e->etype) {
             xcc_error("couldn't find element type of %s", e->name);
@@ -738,23 +744,41 @@ static int output_start_handler(XCC *xcc)
         
         /* get required attributes and their number */
         for (j = 0; j < n_attributes; j++) {
+            char *pname;
 
             xcc_stack_get_data(e->attributes, j, &p);
             a = p;
             
             if (a->required && n_attributes_max > 0) {
-                char *pname = print_sharp_name(a->name);
+                pname = print_sharp_name(a->name);
 
                 dump(xcc, "        attribs_required[%d] = %s;\n",
                     nattribs_required++, pname);
                 xcc_free(pname);                
+            } else
+            if (a->defaultv && n_attributes_max > 0) {
+                pname = print_sharp_name(a->name);
+
+                dump(xcc, "        attr_extra[%d] = %s;\n",
+                    2*nattribs_implied, pname);
+                xcc_free(pname);                
+                pname  = print_sharp_name(a->defaultv);
+                dump(xcc, "        attr_extra[%d] = %s;\n",
+                    2*nattribs_implied + 1, pname);
+                xcc_free(pname);                
+                nattribs_implied++;
             }
         }
         if (nattribs_required) {
             dump(xcc, "        nattribs_required = %d;\n\n",
                 nattribs_required);
         }
+        if (nattribs_implied) {
+            dump(xcc, "        nattribs_implied = %d;\n\n",
+                nattribs_implied);
+        }
         
+        dump(xcc, "        attr = xcc_augment_attributes(attr_in, nattribs_implied, attr_extra);\n");
         dump(xcc, "        for (i = 0; attr[i]; i += 2) {\n");
         dump(xcc, "            askip = 0;\n");
         dump(xcc, "            aname  = xcc_get_local(attr[i], %s, &askip);\n",
@@ -813,6 +837,9 @@ static int output_start_handler(XCC *xcc)
         dump(xcc, "                }\n");
         dump(xcc, "                xcc_free(aname);\n");
         dump(xcc, "            }\n");
+        dump(xcc, "        if (attr != (char **) attr_in) {\n");
+        dump(xcc, "            xcc_free(attr);\n");
+        dump(xcc, "        }\n");
         dump(xcc, "        break;\n");
     }
 
@@ -1155,6 +1182,9 @@ int xcc_output_schema(const XCC *xcc)
                 attributes_set_sval(attrs, "name", a->name);
                 if (a->required) {
                     attributes_set_sval(attrs, "use", "required");
+                } else
+                if (a->defaultv) {
+                    attributes_set_sval(attrs, "default", a->defaultv);
                 }
                 xfile_empty_element(xf, "attribute", attrs);
             }

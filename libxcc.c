@@ -227,6 +227,51 @@ char *xcc_get_local(const char *name, const char *ns_uri, int *skip)
     return local_name;
 }
 
+/* NB: attr1 is NULL-terminated, attr2 is NOT */
+char **xcc_augment_attributes(const char **attr,
+    unsigned int n2, char **attr2)
+{
+    unsigned int nattr, i2;
+    int nextra = 2*n2;
+    
+    if (!n2) {
+        return (char **) attr;
+    }
+
+    for (nattr = 0; attr[nattr]; nattr += 2) {
+        const char *aname = attr[nattr];
+        for (i2 = 0; i2 < 2*n2; i2 += 2) {
+            char *aname2 = attr2[i2];
+            if (aname2 && !strcmp(aname, aname2)) {
+                attr2[i2] = NULL;
+                nextra -= 2;
+            }
+        } 
+    }
+    
+    if (nextra <= 0) {
+        /* actually, it CAN'T be negative... */
+        return (char **) attr;
+    } else {
+        unsigned nnew = nattr + nextra;
+        char **attr_new = xcc_malloc((nnew + 1)*sizeof(char *));
+        if (attr_new) {
+            unsigned int inew = nattr;
+            memcpy(attr_new, attr, nattr*sizeof(char *));
+            for (i2 = 0; i2 < 2*n2; i2 += 2) {
+                if (attr2[i2]) {
+                    attr_new[inew] = attr2[i2];
+                    attr_new[inew + 1] = attr2[i2 + 1];
+                    inew += 2;
+                }
+            }
+            attr_new[nnew] = NULL;
+        }
+        
+        return attr_new;
+    }
+}
+
 void *xcc_get_root(const XCCParserData *pdata)
 {
     void *p;

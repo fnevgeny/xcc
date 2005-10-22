@@ -85,6 +85,7 @@ typedef struct _Attribute {
     AType *atype;
     XCCCode *code;
     int required;
+    char *defaultv;
 } Attribute;
 
 typedef struct _Child {

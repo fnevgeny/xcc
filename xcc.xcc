@@ -55,7 +55,7 @@
         <attribute name="ns" type="sval">
             $$->ns_uri = $?;
         </attribute>
-        <attribute name="prefix" type="sval">
+        <attribute name="prefix" type="sval" default="xcc">
             $$->prefix = $?;
         </attribute>
         <!-- Child elements -->
@@ -147,8 +147,11 @@
             $$->atype = get_atype_by_name(xcc->a_types, $?);
             free($?);
         </attribute>
-        <attribute name="required" type="bval">
+        <attribute name="required" type="bval" default="false">
             $$->required = $?;
+        </attribute>
+        <attribute name="default" type="sval">
+            $$->defaultv = $?;
         </attribute>
         <!-- Character data -->
         <data>
@@ -160,10 +163,10 @@
         <attribute name="name" type="sval" required="true">
             $$->name = $?;
         </attribute>
-        <attribute name="minOccurs" type="ival">
+        <attribute name="minOccurs" type="ival" default="0">
             $$->minOccurs = $?;
         </attribute>
-        <attribute name="maxOccurs" type="ival">
+        <attribute name="maxOccurs" type="ival" default="0">
             $$->maxOccurs = $?;
         </attribute>
         <!-- Character data -->

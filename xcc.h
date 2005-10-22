@@ -132,6 +132,9 @@ XCCNode *xcc_node_new(void);
 
 char *xcc_get_local(const char *name, const char *ns_uri, int *skip);
 
+char **xcc_augment_attributes(const char **attr,
+    unsigned int n2, char **attr2);
+
 void *xcc_get_root(const XCCParserData *pdata);
 int xcc_get_linenum(const XCCParserData *pdata);
 
