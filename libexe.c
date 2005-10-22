@@ -792,7 +792,7 @@ static int output_start_handler(XCC *xcc)
             a = p;
 
             pname = print_sharp_name(a->name);
-            dump(xcc, "                if (!strcmp(aname, %s)) {\n", pname);
+            dump(xcc, "            if (!strcmp(aname, %s)) {\n", pname);
             xcc_free(pname);
 
             if (snprintf(abuf, XCC_CHARBUFFSIZE, "attribute.%s", a->atype->name)
@@ -821,22 +821,22 @@ static int output_start_handler(XCC *xcc)
             
             if (a->required && n_attributes_max > 0) {
                 /* clear 'required' flag */
-                dump(xcc, "                attribs_required[%d] = NULL;\n",
+                dump(xcc, "            attribs_required[%d] = NULL;\n",
                     nattribs_required++);
             }
             
-            dump(xcc, "                } else\n");
+            dump(xcc, "            } else\n");
         }
-        dump(xcc, "                {\n");
-        dump(xcc, "                   if (!askip && pdata->exception_handler(XCC_EATTR, aname, el_local, pdata->udata)) {\n");
-        dump(xcc, "                       askip = 1;\n");
-        dump(xcc, "                   }\n");
-        dump(xcc, "                   if (!askip) {\n");
-        dump(xcc, "                       pdata->error = 1;\n");
-        dump(xcc, "                   }\n");
-        dump(xcc, "                }\n");
-        dump(xcc, "                xcc_free(aname);\n");
+        dump(xcc, "            {\n");
+        dump(xcc, "               if (!askip && pdata->exception_handler(XCC_EATTR, aname, el_local, pdata->udata)) {\n");
+        dump(xcc, "                   askip = 1;\n");
+        dump(xcc, "               }\n");
+        dump(xcc, "               if (!askip) {\n");
+        dump(xcc, "                   pdata->error = 1;\n");
+        dump(xcc, "               }\n");
         dump(xcc, "            }\n");
+        dump(xcc, "            xcc_free(aname);\n");
+        dump(xcc, "        }\n");
         dump(xcc, "        if (attr != (char **) attr_in) {\n");
         dump(xcc, "            xcc_free(attr);\n");
         dump(xcc, "        }\n");
