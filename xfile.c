@@ -255,6 +255,8 @@ void xfile_free(XFile *xf)
     if (xf) {
         xstack_free(xf->tree);
         xcc_free(xf->indstr);
+        xcc_free(xf->ns_prefix);
+        xcc_free(xf->ns_uri);
         xcc_free(xf);
     }
 }
