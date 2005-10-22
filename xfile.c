@@ -70,6 +70,7 @@ void xstack_free(XStack *xs)
             xcc_free(xs->entries[xs->depth].name);
         }
         
+        xcc_free(xs->entries);
         xcc_free(xs);
     }
 }
