@@ -612,7 +612,7 @@ static int output_start_handler(XCC *xcc)
         dump(xcc, "    char *attribs_required[%d];\n", n_attributes_max);
         dump(xcc, "    char *attr_extra[%d];\n", 2*n_attributes_max);
         dump(xcc, "    int nattribs_required = 0;\n");
-        dump(xcc, "    int nattribs_implied  = 0;\n");
+        dump(xcc, "    int nattr_extra  = 0;\n");
     }
     dump(xcc, "    if (pdata->error) {\n");
     dump(xcc, "        return;\n");
@@ -703,7 +703,7 @@ static int output_start_handler(XCC *xcc)
         char ebuf[XCC_CHARBUFFSIZE], abuf[XCC_CHARBUFFSIZE],
             pbuf[XCC_CHARBUFFSIZE];
         Attribute *a;
-        int nattribs_required = 0, nattribs_implied = 0;
+        int nattribs_required = 0, nattr_extra = 0;
         
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
@@ -760,25 +760,25 @@ static int output_start_handler(XCC *xcc)
                 pname = print_sharp_name(a->name);
 
                 dump(xcc, "        attr_extra[%d] = %s;\n",
-                    2*nattribs_implied, pname);
+                    2*nattr_extra, pname);
                 xcc_free(pname);                
                 pname  = print_sharp_name(a->defaultv);
                 dump(xcc, "        attr_extra[%d] = %s;\n",
-                    2*nattribs_implied + 1, pname);
+                    2*nattr_extra + 1, pname);
                 xcc_free(pname);                
-                nattribs_implied++;
+                nattr_extra++;
             }
         }
         if (nattribs_required) {
             dump(xcc, "        nattribs_required = %d;\n\n",
                 nattribs_required);
         }
-        if (nattribs_implied) {
-            dump(xcc, "        nattribs_implied = %d;\n\n",
-                nattribs_implied);
+        if (nattr_extra) {
+            dump(xcc, "        nattr_extra = %d;\n\n",
+                nattr_extra);
         }
         
-        dump(xcc, "        attr = xcc_augment_attributes(attr_in, nattribs_implied, attr_extra);\n");
+        dump(xcc, "        attr = xcc_augment_attributes(attr_in, nattr_extra, attr_extra);\n");
         dump(xcc, "        for (i = 0; attr[i]; i += 2) {\n");
         dump(xcc, "            askip = 0;\n");
         dump(xcc, "            aname  = xcc_get_local(attr[i], %s, &askip);\n",
@@ -821,7 +821,7 @@ static int output_start_handler(XCC *xcc)
             
             if (a->required && n_attributes_max > 0) {
                 /* clear 'required' flag */
-                dump(xcc, "            attribs_required[%d] = NULL;\n",
+                dump(xcc, "                attribs_required[%d] = NULL;\n",
                     nattribs_required++);
             }
             
