@@ -115,7 +115,7 @@
             $$->name = $?;
         </attribute>
         <attribute name="type" type="sval" required="true">
-            XCC *xcc = (XCC *) $0;
+            XCC *xcc = xcc_get_root($X);
             $$->etype = get_etype_by_name(xcc->e_types, $?);
             free($?);
         </attribute>
@@ -143,7 +143,7 @@
             $$->name = $?;
         </attribute>
         <attribute name="type" type="sval" required="true">
-            XCC *xcc = (XCC *) $0;
+            XCC *xcc = xcc_get_root($X);
             $$->atype = get_atype_by_name(xcc->a_types, $?);
             free($?);
         </attribute>
