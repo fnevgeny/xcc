@@ -29,7 +29,7 @@
     <!-- Elements -->
     <element name="books" type="books">
         <!-- Attributes -->
-        <attribute name="version" type="sval">
+        <attribute name="version" type="sval" default="1.0">
             $$->version = $?;
         </attribute>
         <child name="book">
