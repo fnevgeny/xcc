@@ -9,8 +9,12 @@
     <attribute-type name="sval" ctype="char *">
         $$ = xcc_strdup($?);
     </attribute-type>
-    <attribute-type name="ival" ctype="int">
-        $$ = atoi($?);
+    <attribute-type name="occurrence" ctype="unsigned int">
+        if (!strcmp($?, "unbounded")) {
+            $$ = 0;
+        } else {
+            $$ = atoi($?);
+        }
     </attribute-type>
     <attribute-type name="bval" ctype="int">
         if (!strcmp($?, "true")) {
@@ -163,10 +167,10 @@
         <attribute name="name" type="sval" required="true">
             $$->name = $?;
         </attribute>
-        <attribute name="minOccurs" type="ival" default="0">
+        <attribute name="minOccurs" type="occurrence" default="0">
             $$->minOccurs = $?;
         </attribute>
-        <attribute name="maxOccurs" type="ival" default="0">
+        <attribute name="maxOccurs" type="occurrence" default="unbounded">
             $$->maxOccurs = $?;
         </attribute>
         <!-- Character data -->
