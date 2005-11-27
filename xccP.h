@@ -128,6 +128,8 @@ EType *get_etype_by_name(XCCStack *e_types, const char *name);
 XCC *xcc_xcc_new(void);
 void xcc_xcc_free(XCC *xcc);
 
+int xcc_check_tree(const XCC *xcc);
+
 int xcc_output_parser(XCC *xcc);
 
 int xcc_output_schema(const XCC *xcc);

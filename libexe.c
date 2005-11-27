@@ -546,10 +546,6 @@ static int output_init_occurrence(XCC *xcc)
                 c = p;
 
                 ce = get_element_by_name(xcc->elements, c->name);
-                if (!ce) {
-                    xcc_error("couldn't find definition for element %s", c->name);
-                    return XCC_RETURN_FAILURE;
-                }
 
                 dump(xcc, "            occurrence[%d].allowed = 1;\n",
                     ce->id - KEY_SHIFT);
@@ -708,11 +704,6 @@ static int output_start_handler(XCC *xcc)
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
         element_id = e->id;
-
-        if (!e->etype) {
-            xcc_error("couldn't find element type of %s", e->name);
-            return XCC_RETURN_FAILURE;
-        }
 
         if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", e->etype->name)
             >= XCC_CHARBUFFSIZE) {
@@ -989,10 +980,6 @@ static int output_end_handler(XCC *xcc)
             xcc_stack_get_data(e->children, j, &p);
             c = p;
             ce = get_element_by_name(xcc->elements, c->name);
-            if (!ce) {
-                xcc_error("couldn't find definition for element %s", c->name);
-                return XCC_RETURN_FAILURE;
-            }
             if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", ce->etype->name)
                 >= XCC_CHARBUFFSIZE) {
                 xcc_error("snprintf() failed in func %s line %d",
@@ -1203,6 +1190,71 @@ int xcc_output_schema(const XCC *xcc)
     xfile_end(xf);
     xfile_free(xf);
 
+    return XCC_RETURN_SUCCESS;
+}
+
+/* Check validity of the XCC tree */
+int xcc_check_tree(const XCC *xcc)
+{
+    int i, n_elements;
+
+    n_elements = xcc_stack_depth(xcc->elements);
+    
+    for (i = 0; i < n_elements; i++) {
+        void *p;
+        Element *e;
+        Attribute *a;
+        int j, element_id, n_children, n_attributes;
+        
+        xcc_stack_get_data(xcc->elements, i, &p);
+        e = p;
+        element_id = e->id;
+
+        if (!e->name) {
+            xcc_error("Got unnamed element");
+            return XCC_RETURN_FAILURE;
+        }
+        if (!e->etype) {
+            xcc_error("Couldn't find element type of %s", e->name);
+            return XCC_RETURN_FAILURE;
+        }
+
+        n_attributes = xcc_stack_depth(e->attributes);
+        
+        /* get required attributes and their number */
+        for (j = 0; j < n_attributes; j++) {
+            xcc_stack_get_data(e->attributes, j, &p);
+            a = p;
+            if (!a->name) {
+                xcc_error("Got unnamed attribute of element \"%s\"", e->name);
+                return XCC_RETURN_FAILURE;
+            }
+            if (!a->atype) {
+                xcc_error("Couldn't find attribute type of \"%s\"", a->name);
+                return XCC_RETURN_FAILURE;
+            }
+        }
+
+        n_children = xcc_stack_depth(e->children);
+
+        for (j = 0; j < n_children; j++) {
+            Child *c;
+            Element *ce;
+            xcc_stack_get_data(e->children, j, &p);
+            c = p;
+
+            if (!c->name) {
+                xcc_error("Got unnamed child of element \"%s\"", e->name);
+                return XCC_RETURN_FAILURE;
+            }
+            ce = get_element_by_name(xcc->elements, c->name);
+            if (!ce) {
+                xcc_error("Couldn't find definition for element %s", c->name);
+                return XCC_RETURN_FAILURE;
+            }
+        }
+    }
+    
     return XCC_RETURN_SUCCESS;
 }
 

@@ -213,6 +213,11 @@ int main(int argc, char * const argv[])
     }
 
     xcc->opts = &xopts;
+
+    /* check that everything is consistent */
+    if (xcc_check_tree(xcc) != XCC_RETURN_SUCCESS) {
+        exit(1);
+    }
     
     /* generate the parser */
     if (xopts.schema) {
