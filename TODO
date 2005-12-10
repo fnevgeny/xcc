@@ -1,5 +1,7 @@
 * Write some docs ...
 
+* Use autoconf for configuration/building
+
 * More W3C XML schema features (in particular, primitive types predefined)
 
 * Generate parsers for use with other SAX tokenizers (libxml, ...)

@@ -1,3 +1,13 @@
+New with 0.5.2, released 2005-12-10:
+
+    * Implemented defining default values of optional attributes, like in W3C
+      schemas.
+    * A couple of minor memory leaks fixed.
+    * More checks added, eliminating possible crashes on inconsistently defined
+      xcc inputs.
+    * "unbounded" value for the "occurence" attribute is now properly parsed.
+
+
 New with 0.5.1, released 2005-10-20:
 
     * [BB] Added #line directives to the generated source. Can be disabled
