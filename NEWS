@@ -5,7 +5,7 @@ New with 0.5.2, released 2005-12-10:
     * A couple of minor memory leaks fixed.
     * More checks added, eliminating possible crashes on inconsistently defined
       xcc inputs.
-    * "unbounded" value for the "occurence" attribute is now properly parsed.
+    * "unbounded" value for the "maxOccurs" attribute is now properly parsed.
 
 
 New with 0.5.1, released 2005-10-20:
