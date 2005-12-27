@@ -871,10 +871,21 @@ static int output_start_handler(XCC *xcc)
 
 static int output_end_handler(XCC *xcc)
 {
-    int i, n_elements;
+    int i, n_elements, n_data_elements;
     char pbuf[XCC_CHARBUFFSIZE], ebuf[XCC_CHARBUFFSIZE];
+    void *p;
+    Element *e;
 
     n_elements = xcc_stack_depth(xcc->elements);
+    
+    n_data_elements = 0;
+    for (i = 0; i < n_elements; i++) {
+        xcc_stack_get_data(xcc->elements, i, &p);
+        e = p;
+        if (e->code->string != NULL) {
+            n_data_elements++;
+        }
+    }
 
     dump(xcc, "static void %s_end_handler(void *data, const char *el)\n",
         xcc->prefix);  
@@ -884,7 +895,9 @@ static int output_end_handler(XCC *xcc)
     dump(xcc, "    void *p;\n");
     dump(xcc, "    int element_id, parent_id, parent_child, skip = 0;\n");
     dump(xcc, "    XCCEType element, pelement;\n");
-    dump(xcc, "    char *cdata = pdata->cbuffer;\n\n");
+    if (n_data_elements) {
+        dump(xcc, "    char *cdata = pdata->cbuffer;\n\n");
+    }
 
     dump(xcc, "    if (pdata->error) {\n");
     dump(xcc, "        return;\n");
@@ -895,35 +908,35 @@ static int output_end_handler(XCC *xcc)
     dump(xcc, "    element_id = node->id;\n");
     dump(xcc, "    element.unicast = node->data;\n");
 
-    dump(xcc, "    switch (element_id) {\n");
-    for (i = 0; i < n_elements; i++) {
-        Element *e;
-        void *p;
-        int element_id;
+    if (n_data_elements) {
+        dump(xcc, "    switch (element_id) {\n");
+        for (i = 0; i < n_elements; i++) {
+            int element_id;
 
-        xcc_stack_get_data(xcc->elements, i, &p);
-        e = p;
-        if (e->code->string != NULL) {
-            if (snprintf(ebuf, XCC_CHARBUFFSIZE, "element.%s", e->etype->name)
-                >= XCC_CHARBUFFSIZE) {
-                xcc_error("snprintf() failed in func %s line %d",
-                    __FUNCTION__, __LINE__);
-                return XCC_RETURN_FAILURE;
+            xcc_stack_get_data(xcc->elements, i, &p);
+            e = p;
+            if (e->code->string != NULL) {
+                if (snprintf(ebuf, XCC_CHARBUFFSIZE,
+                    "element.%s", e->etype->name) >= XCC_CHARBUFFSIZE) {
+                    xcc_error("snprintf() failed in func %s line %d",
+                        __FUNCTION__, __LINE__);
+                    return XCC_RETURN_FAILURE;
+                }
+
+                element_id  = e->id;
+                dump(xcc, "    case %d: /* %s */\n", element_id, e->name);
+                dump(xcc, "        {\n");
+                dump_code(xcc, e->code,
+                    "$$", ebuf,
+                    "$?", "cdata",
+                    "$X", "pdata",
+                    NULL);
+                dump(xcc, "        }\n");
+                dump(xcc, "        break;\n");
             }
-
-            element_id  = e->id;
-            dump(xcc, "    case %d: /* %s */\n", element_id, e->name);
-            dump(xcc, "        {\n");
-            dump_code(xcc, e->code,
-                "$$", ebuf,
-                "$?", "cdata",
-                "$X", "pdata",
-                NULL);
-            dump(xcc, "        }\n");
-            dump(xcc, "        break;\n");
         }
+        dump(xcc, "    }\n\n");
     }
-    dump(xcc, "    }\n\n");
 
     dump(xcc, "    if (node->occurrence) {\n");
     dump(xcc, "        unsigned int i;\n");
