@@ -331,7 +331,8 @@ static int dump_code_chunk(XCC *xcc, int line, const char *chunk)
     }
     dump(xcc, "%s\n", chunk);
     if (!xcc->opts->nolines) {
-        dump(xcc, "#line %d \"%s\"\n", xcc->currentLine, xcc->opts->ofile);
+        /* "+ 1" to account for the "#line" line itself */
+        dump(xcc, "#line %d \"%s\"\n", xcc->currentLine + 1, xcc->opts->ofile);
     }
 
     return XCC_RETURN_SUCCESS;
