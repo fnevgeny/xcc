@@ -1036,13 +1036,8 @@ static int output_parser(XCC *xcc)
     dump(xcc, "int %s_parse(FILE *fp, void **root, void *udata, XCCExceptionHandler exception_handler)\n", xcc->prefix);
     dump(xcc, "{\n");
 
-    dump(xcc, "    if (xcc_run(fp, root, udata, %s_start_handler, %s_end_handler, exception_handler)\n",
+    dump(xcc, "    return xcc_run(fp, root, udata, %s_start_handler, %s_end_handler, exception_handler);\n",
         xcc->prefix, xcc->prefix);
-    dump(xcc, "        != XCC_RETURN_SUCCESS) {\n");
-    dump(xcc, "        return XCC_RETURN_FAILURE;\n");
-    dump(xcc, "    }\n");
-    
-    dump(xcc, "    return XCC_RETURN_SUCCESS;\n");
     dump(xcc, "}\n");
 
     return XCC_RETURN_SUCCESS;
