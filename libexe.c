@@ -1280,6 +1280,15 @@ static void usage(const char *arg0, FILE *fp)
     fprintf(fp, "  -h         print this help and exit\n");
 }
 
+static void verinfo(void)
+{
+    printf("%s\n", xcc_get_version_string());
+    puts("Written by Evgeny Stambulchik, with contributions by other people.\n");
+    puts("Copyright (C) 2005 Evgeny Stambulchik.");
+    puts("This is free software; see the source for copying conditions.  There is NO");
+    puts("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+}
+
 int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
 {
     int opt;
@@ -1302,7 +1311,7 @@ int xcc_parse_opts(XCCOpts *xopts, int argc, char * const argv[])
             xopts->schema = 1;
             break;
         case 'V':
-            printf("%s\n", xcc_get_version_string());
+            verinfo();
             exit(0);
             break;
         case 'h':
