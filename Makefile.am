@@ -43,8 +43,12 @@ xcc_hdir	= $(includedir)
 
 man_MANS	= xcc.1
 
-EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) $(xcc_SOURCES) xcc.xcc c2cstr.sh bundle.i $(man_MANS)
-MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc Makefile.in aclocal.m4 config.h.in config.log config.status configure libtool config.guess config.sub depcomp install-sh missing mkinstalldirs ltmain.sh
+EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) \
+		  $(xcc_SOURCES) xcc.xcc c2cstr.sh bundle.i $(man_MANS)
+MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc Makefile.in aclocal.m4 \
+			config.h.in config.log config.status configure libtool \
+			config.guess config.sub depcomp install-sh missing \
+			mkinstalldirs ltmain.sh autom4te.cache
 
 
 all-local: $(SCHEMA)
