@@ -32,7 +32,7 @@ bundle.i: xcc.h libxcc.c
 $(SCHEMA):  xcc.xcc xcc
 	./xcc -i xcc.xcc -s -o $@
 
-ChangeLog : configure.in
+ChangeLog : configure.in NEWS
 	cvs2cl
 
 SCHEMA 		= xcc.xsd
