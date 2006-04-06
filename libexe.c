@@ -25,6 +25,7 @@
  * Library routines for XCC executable itself
  */
 
+#include <config.h>
 #include <string.h>
 #include <getopt.h>
 #include <stdarg.h>

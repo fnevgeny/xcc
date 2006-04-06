@@ -27,6 +27,7 @@
    this file without further restrictions, provided that its contents are
    preserved verbatim. */
 
+#include <config.h>
 #include <string.h>
 #include <stdarg.h>
 

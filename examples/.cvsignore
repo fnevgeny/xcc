@@ -1,3 +1,6 @@
 books.c
 books
 books.xsd
+Makefile.in
+Makefile
+.libs
