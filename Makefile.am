@@ -48,7 +48,7 @@ EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) \
 MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc Makefile.in aclocal.m4 \
 			config.h.in config.log config.status configure libtool \
 			config.guess config.sub depcomp install-sh missing \
-			mkinstalldirs ltmain.sh autom4te.cache
+			mkinstalldirs ltmain.sh autom4te.cache stamp-h*
 
 
 all-local: $(SCHEMA)
