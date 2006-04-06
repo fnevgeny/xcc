@@ -31,3 +31,4 @@ libxcc.la
 libxcc.lo
 stamp-h
 stamp-h.in
+*.tar.gz
