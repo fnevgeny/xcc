@@ -24,11 +24,12 @@ install-sh
 missing
 mkinstalldirs
 ltmain.sh
-.libs
 config.h
 config.h.in
 libxcc.la
 libxcc.lo
-stamp-h
+stamp-h*
 stamp-h.in
+.deps
+.libs
 *.tar.gz

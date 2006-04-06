@@ -4,3 +4,4 @@ books.xsd
 Makefile.in
 Makefile
 .libs
+.deps
