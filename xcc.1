@@ -1,0 +1,74 @@
+.TH xcc 1 "10. October 2005" "XML Compiler Compiler"
+.SH NAME
+XCC \- XML Compiler Compiler
+
+.SH DESCRIPTION
+\fBXCC\fR 
+is a tool for building XML format parsers. One way to describe what XCC
+does is by analogy with a generic parser generator, e.g. yacc or bison.
+Yacc needs a lexical analyzer to function properly, and that lexical analyzer
+is usually built with (f)lex. In the XML world, there are a few packages which
+fill in the role of lex (expat and libxml are the most known), but the 
+high-level grammar parsing is usually done by a hand-written code; writing such
+a parser is a tedious and error-prone task. XCC was created to help developers
+in writing reliable easy-to-understood parsers for handling complex XML-based
+grammars.
+.SS OPTIONS
+.TP
+.BI \-i " <input-file>"
+.br
+.ns
+.TP
+.BI
+Specifiy an XCC grammar file to be used as input. Standard input is the default.
+.TP
+.BI \-o " <output-file>"
+.br
+.ns
+.TP
+.BI
+Specifiy the file the generated output is written to. Standard output is the default.
+.TP
+.BI \-b
+.br
+.ns
+.TP
+.BI
+Include auxillary code in the generated output that normally resides in libxcc.a.
+.TP
+.BI \-l
+.br
+.ns
+.TP
+.BI
+XCC will not put #line directives in the generated source. With #line directives, line numbers of error and warning messages from the compiler are translated to lines numbers in the XCC grammar file.
+.TP
+.BI \-s
+.br
+.ns
+.TP
+.BI
+Generate a WXS schema. The schema file will be named after the input, with a .xsd extension.
+.TP
+.BI \-V
+.br
+.ns
+.TP
+.BI
+Display version info and exit
+.TP
+.BI \-h
+.br
+.ns
+.TP
+.BI
+Print this help and exit
+	      
+
+.SH "SEE ALSO"
+.BR bison (1)
+
+.SH AUTHOR
+XCC was written by Evgeny Stambulchik, with contributions from other people.
+This manual page was written by Botond Botyanszki <boti@andrews.hu>
+
