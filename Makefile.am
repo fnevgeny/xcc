@@ -32,6 +32,9 @@ bundle.i: xcc.h libxcc.c
 $(SCHEMA):  xcc.xcc xcc
 	./xcc -i xcc.xcc -s -o $@
 
+ChangeLog : configure.in
+	cvs2cl
+
 SCHEMA 		= xcc.xsd
 schema_DATA	= $(SCHEMA)
 schemadir	= $(pkgdatadir)
@@ -44,12 +47,14 @@ xcc_hdir	= $(includedir)
 man_MANS	= xcc.1
 
 EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) \
-		  $(xcc_SOURCES) xcc.xcc c2cstr.sh bundle.i $(man_MANS)
+		  $(xcc_SOURCES) xcc.xcc c2cstr.sh bundle.i $(man_MANS) \
+		  ChangeLog
+
 MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc Makefile.in aclocal.m4 \
 			config.h.in config.log config.status configure libtool \
 			config.guess config.sub depcomp install-sh missing \
-			mkinstalldirs ltmain.sh autom4te.cache stamp-h*
-
+			mkinstalldirs ltmain.sh stamp-h* \
+			ChangeLog*
 
 all-local: $(SCHEMA)
 
@@ -57,4 +62,3 @@ check-local: xcc_t.c xcc.c
 	@echo -n "Testing self-consistency ... "
 	@diff -q xcc_t.c xcc.c
 	@if test $$? -ne 0; then echo "Failed"; else echo "OK"; fi
-
