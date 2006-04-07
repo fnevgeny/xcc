@@ -1,0 +1,11 @@
+PKG="Axcc"
+NAME="xcc"
+ARCH="@ARCH@"
+VERSION="@VERSION@"
+CATEGORY="application"
+VENDOR="Evgeny Stambulchik"
+EMAIL="boti@andrews.hu"
+PSTAMP="Botond Botyanszki"
+BASEDIR="/usr/local"
+CLASSES="none"
+

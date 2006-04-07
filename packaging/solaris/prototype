@@ -1,0 +1,17 @@
+i pkginfo=./pkginfo
+d none bin 0755 root root
+f none bin/xcc 0755 root root
+d none lib 0755 root root
+f none lib/libxcc.a 0644 root root
+d none include 0755 root root
+f none include/xcc.h 0644 root root
+d none share 0755 root root
+d none share/xcc 0755 root root
+f none share/xcc/xcc.xsd 0644 root root
+d none share/doc 0755 root root
+d none share/doc/xcc 0755 root root
+f none share/doc/xcc/README 0644 root root
+f none share/doc/xcc/NEWS 0644 root root
+f none share/doc/xcc/AUTHORS 0644 root root
+f none share/doc/xcc/TODO 0644 root root
+f none share/man/man1/xcc.1 0644 root root

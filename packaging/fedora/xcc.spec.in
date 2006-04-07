@@ -1,0 +1,45 @@
+Name: 		xcc
+Summary: 	XML Compiler Compiler
+Version: 	@VERSION@
+Release: 	1
+License:	GPL
+Group: 		Development/Tools
+URL:            http://freshmeat.net/projects/xcc/
+Source: 	%{name}-%{version}.tar.gz
+Requires:       expat
+BuildPrereq:    expat-devel
+
+%description
+ XCC is a parser generator for XML based grammars.
+ One way to describe what XCC does is by analogy with a
+ generic parser generator, e.g. yacc or bison.    
+
+%prep
+%setup -q
+%configure
+%build
+
+%install
+make DESTDIR=$RPM_BUILD_ROOT PREFIX=/usr install
+mv $RPM_BUILD_ROOT/%{_docdir}/%{name} $RPM_BUILD_ROOT/%{_docdir}/%{name}-%{version}
+cd ..
+echo install:
+pwd
+rm -rf $RPM_BUILD_ROOT/%{name}-%{version}
+
+%clean
+
+%post
+
+%postun
+
+%preun
+
+%files
+%defattr(-, root, root)
+%{_bindir}/xcc
+%{_libdir}/*
+%{_includedir}/xcc.h
+%{_docdir}/%{name}-%{version}/*
+%{_datadir}/%{name}/xcc.xsd
+%{_mandir}/man1/*

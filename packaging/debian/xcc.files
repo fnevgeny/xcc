@@ -1,0 +1,4 @@
+usr/bin/xcc
+usr/include/xcc.h
+usr/lib/lib*
+usr/share/xcc/xcc.xsd

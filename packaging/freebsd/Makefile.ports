@@ -1,0 +1,35 @@
+# New ports collection makefile for:  xcc
+# Date created:       5 November 2005   
+# Whom:               Botond Botyanszki <boti@andrews.hu>  
+#
+# $FreeBSD$
+
+
+PORTNAME=      xcc  
+PORTVERSION=   0.5.3  
+CATEGORIES=    devel  
+MASTER_SITES=  ftp://plasma-gate.weizmann.ac.il/pub/xcc/
+
+MAINTAINER=    boti@andrews.hu  
+COMMENT=       XML Compiler Compiler  
+
+BUILD_DEPENDS= ${PORTSDIR}/textproc/expat2
+
+# MAN1=          xcc.1
+# MANCOMPRESSED= yes
+# USE_IMAKE=     yes
+
+PLIST_FILES= bin/xcc		\
+	lib/libxcc.a		\
+	share/doc/xcc/TODO	\
+	share/doc/xcc/README	\
+	share/doc/xcc/NEWS	\
+	share/doc/xcc/AUTHORS	\
+	share/xcc/xcc.xsd	\
+	share/man/man1/xcc.1	\
+	include/xcc.h
+
+PLIST_DIRS= share/doc/xcc share/xcc share/man/man1
+
+.include <bsd.port.mk>
+

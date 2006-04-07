@@ -70,7 +70,8 @@ AC_DEFINE_UNQUOTED(XCC_VERSION_STRING, "$PACKAGE_NAME-$PACKAGE_VERSION", [packag
 
 AC_SUBST(VERSION)
 AC_OUTPUT(Makefile							\
-	  examples/Makefile)
+	  examples/Makefile						\
+	  packaging/fedora/xcc.spec)
 
 echo
 echo

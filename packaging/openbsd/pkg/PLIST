@@ -1,0 +1,13 @@
+@owner root
+@group wheel
+bin/xcc
+lib/libxcc.a
+share/doc/xcc/
+share/doc/xcc/TODO
+share/doc/xcc/README
+share/doc/xcc/NEWS
+share/doc/xcc/AUTHORS
+share/xcc/
+share/xcc/xcc.xsd
+include/xcc.h
+share/man/man1/xcc.1

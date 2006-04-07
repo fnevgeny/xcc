@@ -1,0 +1,15 @@
+Source: xcc
+Section: libs
+Priority: optional
+Maintainer: Botond Botyanszki <boti@andrews.hu>
+Build-Depends: debhelper (>> 4.0.0), libexpat1-dev
+Standards-Version: 3.6.1.0
+
+Package: xcc
+Section: devel
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: XML Compiler Compiler
+ XCC is a parser generator for XML based grammars.
+ One way to describe what XCC does is by analogy with a
+ generic parser generator, e.g. yacc or bison.

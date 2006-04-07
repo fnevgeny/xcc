@@ -10,7 +10,7 @@ libxcc_la_SOURCES		= libxcc.c
 scripts				= c2cstr.sh
 
 BUILT_SOURCES			= b2xcc.c xcc.c xcc_t.c bundle.i
-CLEANFILES			= *~
+CLEANFILES			= *~ 
 
 bxcc_SOURCES			= bxcc.c libexe.c xfile.c xfile.h xccP.h
 bxcc.c:				 bundle.i
@@ -34,6 +34,8 @@ $(SCHEMA):  xcc.xcc xcc
 
 ChangeLog : configure.in NEWS
 	cvs2cl
+VERSION: configure.in
+	echo $(VERSION) > $@
 
 SCHEMA 		= xcc.xsd
 schema_DATA	= $(SCHEMA)
@@ -45,16 +47,39 @@ xcc_h_HEADERS	= xcc.h
 xcc_hdir	= $(includedir)
 
 man_MANS	= xcc.1
+mandir		= $(prefix)/share/man
 
 EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) \
 		  $(xcc_SOURCES) xcc.xcc c2cstr.sh bundle.i $(man_MANS) \
-		  ChangeLog
+		  ChangeLog VERSION \
+		  packaging/debian/control \
+		  packaging/debian/copyright \
+		  packaging/debian/rules \
+		  packaging/debian/make-debs.sh \
+		  packaging/debian/xcc.docs \
+		  packaging/debian/xcc.files \
+		  packaging/debian/xcc.manpages \
+		  packaging/fedora/make-rpm.sh \
+		  packaging/fedora/xcc.spec.in \
+		  packaging/fedora/xcc.spec \
+		  packaging/freebsd/Makefile.ports \
+		  packaging/freebsd/make-freebsd-pkg.sh \
+		  packaging/freebsd/pkg-descr \
+		  packaging/freebsd/pkg-plist \
+		  packaging/openbsd/Makefile.ports \
+		  packaging/openbsd/make-openbsd-pkg.sh \
+		  packaging/openbsd/pkg/DESCR \
+		  packaging/openbsd/pkg/PLIST \
+		  packaging/solaris/make-solaris-pkg.sh \
+		  packaging/solaris/pkginfo \
+		  packaging/solaris/prototype
+
 
 MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc Makefile.in aclocal.m4 \
 			config.h.in config.log config.status configure libtool \
 			config.guess config.sub depcomp install-sh missing \
-			mkinstalldirs ltmain.sh stamp-h* \
-			ChangeLog*
+			mkinstalldirs ltmain.sh *stamp* \
+			ChangeLog* VERSION *.tar.gz
 
 all-local: $(SCHEMA)
 

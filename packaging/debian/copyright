@@ -1,0 +1,7 @@
+This package was debianized by Botond Botyanszki <boti@andrews.hu>.
+It was downloaded from ftp://plasma-gate.weizmann.ac.il/pub/xcc/
+
+XCC is under the GNU GPL, the generated parser source necessary for 
+its compilation is unrestricted.
+
+Upstream author is Evgeny Stambulchik <fnevgeny@weizmann.ac.il>

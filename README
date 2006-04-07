@@ -20,3 +20,6 @@ Since version 0.0.1, XCC has been self-hosting. Therefore, given the present
 lack of documentation, its sources may be used to learn the grammar. However,
 if the recursive nature of it causes you light dizziness (it does for me ;-)),
 you're advised to explore the "examples" dir instead.
+
+To create packages for your OS, check the "packaging" directory.
+
