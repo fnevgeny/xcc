@@ -605,12 +605,12 @@ static int output_start_handler(XCC *xcc)
     dump(xcc, "    int i, element_id = -1, parent_id = -1, skip = 0, askip;\n");
     dump(xcc, "    const char *avalue;\n");
     dump(xcc, "    char *aname, *el_local;\n");
+    dump(xcc, "    unsigned int nattr_extra  = 0;\n");
+    dump(xcc, "    char *attr_extra[%d];\n", 2*n_attributes_max);
     if (n_attributes_max > 0) {
         dump(xcc, "    XCCAType attribute;\n");
         dump(xcc, "    char *attribs_required[%d];\n", n_attributes_max);
-        dump(xcc, "    char *attr_extra[%d];\n", 2*n_attributes_max);
         dump(xcc, "    int nattribs_required = 0;\n");
-        dump(xcc, "    int nattr_extra  = 0;\n");
     }
     dump(xcc, "    if (pdata->error) {\n");
     dump(xcc, "        return;\n");
