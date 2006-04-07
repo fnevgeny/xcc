@@ -1,7 +1,34 @@
 This package was debianized by Botond Botyanszki <boti@andrews.hu>.
 It was downloaded from ftp://plasma-gate.weizmann.ac.il/pub/xcc/
 
-XCC is under the GNU GPL, the generated parser source necessary for 
-its compilation is unrestricted.
+/*
+ * XCC - XML Compiler-Compiler
+ * 
+ * Copyright (c) 2000-2006 Evgeny Stambulchik
+ * 
+ * 
+ *                           All Rights Reserved
+ * 
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; either version 2 of the License, or
+ *    (at your option) any later version.
+ * 
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ * 
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 
-Upstream author is Evgeny Stambulchik <fnevgeny@weizmann.ac.il>
+The support library necessary for compilation of the generated code bears
+relaxed conditions:
+
+/* As a special exception, when this file is SOLELY used to provide the
+   functionality as needed by an XCC-generated output at run-time (either
+   copied by XCC into the output file or otherwise linked to), you may use
+   this file without further restrictions, provided that its contents are
+   preserved verbatim. */
