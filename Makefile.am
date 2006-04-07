@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = 1.7
 
+CONFIGURE_DEPENDENCIES		= version.m4
+
 SUBDIRS				= . examples
 
 bin_PROGRAMS			= xcc
@@ -32,10 +34,12 @@ bundle.i: xcc.h libxcc.c
 $(SCHEMA):  xcc.xcc xcc
 	./xcc -i xcc.xcc -s -o $@
 
-ChangeLog : configure.in NEWS
+ChangeLog: configure.in NEWS
 	cvs2cl
 VERSION: configure.in
 	echo $(VERSION) > $@
+
+include version.mak
 
 SCHEMA 		= xcc.xsd
 schema_DATA	= $(SCHEMA)
@@ -79,7 +83,7 @@ MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc Makefile.in aclocal.m4 \
 			config.h.in config.log config.status configure libtool \
 			config.guess config.sub depcomp install-sh missing \
 			mkinstalldirs ltmain.sh *stamp* \
-			ChangeLog* VERSION *.tar.gz
+			ChangeLog* VERSION version.m4 *.tar.gz
 
 all-local: $(SCHEMA)
 

@@ -37,6 +37,10 @@
 /* TODO: get rid of it */
 #define KEY_SHIFT   1
 
+char *xcc_get_version_string(void)
+{
+    return XCC_VERSION_STRING;
+}
 
 XCC *xcc_xcc_new(void)
 {
@@ -1284,8 +1288,8 @@ static void usage(const char *arg0, FILE *fp)
 static void verinfo(void)
 {
     printf("%s\n", xcc_get_version_string());
-    puts("Written by Evgeny Stambulchik, with contributions by other people.\n");
-    puts("Copyright (C) 2005 Evgeny Stambulchik.");
+    puts("Written by Evgeny Stambulchik, with contributions from other people.\n");
+    puts("Copyright (C) 2000-2006 Evgeny Stambulchik.");
     puts("This is free software; see the source for copying conditions.  There is NO");
     puts("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 }

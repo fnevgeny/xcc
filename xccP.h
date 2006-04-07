@@ -95,6 +95,8 @@ typedef struct _Child {
     unsigned int maxOccurs;
 } Child;
 
+char *xcc_get_version_string(void);
+
 char *xcc_strdup(const char *s);
 
 AType *atype_new(void);

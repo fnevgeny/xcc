@@ -27,7 +27,6 @@
    this file without further restrictions, provided that its contents are
    preserved verbatim. */
 
-#include <config.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -38,11 +37,6 @@ void xcc_get_version_numbers(int *major, int *minor, int *nano)
     *major = XCC_VERSION_MAJOR;
     *minor = XCC_VERSION_MINOR;
     *nano  = XCC_VERSION_NANO;
-}
-
-char *xcc_get_version_string(void)
-{
-    return XCC_VERSION_STRING;
 }
 
 void xcc_error(const char *fmt, ...)
