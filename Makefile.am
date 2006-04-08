@@ -56,7 +56,7 @@ mandir		= $(prefix)/share/man
 
 EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) \
 		  $(xcc_SOURCES) xcc.xcc c2cstr.sh $(man_MANS) \
-		  ChangeLog VERSION \
+		  LICENSE ChangeLog VERSION \
 		  packaging/debian/control \
 		  packaging/debian/copyright \
 		  packaging/debian/rules \
