@@ -15,14 +15,15 @@ BUILT_SOURCES			= b2xcc.c xcc.c xcc_t.c bundle.i
 CLEANFILES			= *~ 
 
 bxcc_SOURCES			= bxcc.c libexe.c xfile.c xfile.h xccP.h
-bxcc.c:				 bundle.i
 
 b2xcc_SOURCES			= b2xcc.c libexe.c xfile.c xfile.h xccP.h
+
+xcc_SOURCES			= xcc.c libexe.c xfile.c xfile.h xccP.h
+
 b2xcc.c:  xcc.xcc bxcc
 	./bxcc -l -i xcc.xcc -o $@
 
-xcc_SOURCES			= xcc.c libexe.c xfile.c xfile.h xccP.h
-xcc.c:  xcc.xcc b2xcc
+xcc.c:    xcc.xcc b2xcc
 	./b2xcc -i xcc.xcc -o $@
 
 xcc_t.c:  xcc.xcc xcc
@@ -54,7 +55,7 @@ man_MANS	= xcc.1
 mandir		= $(prefix)/share/man
 
 EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) \
-		  $(xcc_SOURCES) xcc.xcc c2cstr.sh bundle.i $(man_MANS) \
+		  $(xcc_SOURCES) xcc.xcc c2cstr.sh $(man_MANS) \
 		  ChangeLog VERSION \
 		  packaging/debian/control \
 		  packaging/debian/copyright \
