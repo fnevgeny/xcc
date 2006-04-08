@@ -1,3 +1,18 @@
+New with 0.6.0, released 2006-04-08:
+
+    * [BB] Build process autotoolized.
+    * [BB] Added packaging configurations/scripts for Debian, Fedora, FreeBSD,
+      OpenBSD, and Solaris.
+    * [BB] Added man page.
+    * Output preamble prior to including the standard xcc headers, thus giving
+      user a chance to override anything in the system headers.
+    * [BB] Processed xcc files without attribute types defined wouldn't compile.
+    * Extended version info output.
+    * Fixed off-by-one #line numbering of the output file.
+    * Eleminated an unused variable and a chunk of code for parsers where none
+      of elements contains a cdata section.
+
+
 New with 0.5.2, released 2005-12-10:
 
     * Implemented defining default values of optional attributes, like in W3C
