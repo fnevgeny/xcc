@@ -12,13 +12,15 @@ libxcc_la_SOURCES		= libxcc.c
 scripts				= c2cstr.sh
 
 BUILT_SOURCES			= b2xcc.c xcc.c xcc_t.c bundle.i
-CLEANFILES			= *~ 
+CLEANFILES			= $(BUILT_SOURCES) *~ 
 
 bxcc_SOURCES			= bxcc.c libexe.c xfile.c xfile.h xccP.h
 
 b2xcc_SOURCES			= b2xcc.c libexe.c xfile.c xfile.h xccP.h
 
 xcc_SOURCES			= xcc.c libexe.c xfile.c xfile.h xccP.h
+
+libexe.$(OBJEXT): bundle.i
 
 b2xcc.c:  xcc.xcc bxcc
 	./bxcc -l -i xcc.xcc -o $@
