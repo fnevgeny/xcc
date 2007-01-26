@@ -1,3 +1,8 @@
+New with 0.6.1, released 2007-01-27:
+
+    * Fixed build process.
+    
+    
 New with 0.6.0, released 2006-04-08:
 
     * [BB] Build process autotoolized.
