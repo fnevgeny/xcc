@@ -4,8 +4,8 @@ CONFIGURE_DEPENDENCIES		= version.m4
 
 SUBDIRS				= . examples
 
-bin_PROGRAMS			= xcc
-noinst_PROGRAMS			= bxcc b2xcc
+bin_PROGRAMS			= xcc$(EXEEXT)
+noinst_PROGRAMS			= bxcc$(EXEEXT) b2xcc$(EXEEXT)
 LDADD				= libxcc.la
 lib_LTLIBRARIES			= libxcc.la
 libxcc_la_SOURCES		= libxcc.c
@@ -22,20 +22,20 @@ xcc_SOURCES			= xcc.c libexe.c xfile.c xfile.h xccP.h
 
 libexe.$(OBJEXT): bundle.i
 
-b2xcc.c:  xcc.xcc bxcc
-	./bxcc -l -i xcc.xcc -o $@
+b2xcc.c:  xcc.xcc bxcc$(EXEEXT)
+	./bxcc$(EXEEXT) -l -i xcc.xcc -o $@
 
-xcc.c:    xcc.xcc b2xcc
-	./b2xcc -i xcc.xcc -o $@
+xcc.c:    xcc.xcc b2xcc$(EXEEXT)
+	./b2xcc$(EXEEXT) -i xcc.xcc -o $@
 
-xcc_t.c:  xcc.xcc xcc
-	./xcc -i xcc.xcc | sed '/^#line/s/stdout/xcc.c/g' > $@
+xcc_t.c:  xcc.xcc xcc$(EXEEXT)
+	./xcc$(EXEEXT) -i xcc.xcc | sed '/^#line/s/stdout/xcc.c/g' > $@
 
 bundle.i: xcc.h libxcc.c
 	./c2cstr.sh xcc.h libxcc.c > $@
 
-$(SCHEMA):  xcc.xcc xcc
-	./xcc -i xcc.xcc -s -o $@
+$(SCHEMA):  xcc.xcc xcc$(EXEEXT)
+	./xcc$(EXEEXT) -i xcc.xcc -s -o $@
 
 ChangeLog: configure.in NEWS
 	cvs2cl
@@ -82,10 +82,10 @@ EXTRA_DIST	= $(doc_DATA) $(SCHEMA) $(bxcc_SOURCES) $(b2xcc_SOURCES) \
 		  packaging/solaris/prototype
 
 
-MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc Makefile.in aclocal.m4 \
-			config.h.in config.log config.status configure libtool \
-			config.guess config.sub depcomp install-sh missing \
-			mkinstalldirs ltmain.sh *stamp* \
+MAINTAINERCLEANFILES = $(BUILT_SOURCES) $(SCHEMA) bxcc$(EXEEXT) Makefile.in \
+			aclocal.m4 config.h.in config.log config.status \
+			configure libtool config.guess config.sub depcomp \
+			install-sh missing mkinstalldirs ltmain.sh *stamp* \
 			ChangeLog* VERSION version.m4 *.tar.gz
 
 all-local: $(SCHEMA)
