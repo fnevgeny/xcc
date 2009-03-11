@@ -1,6 +1,6 @@
-noinst_PROGRAMS		= books
+noinst_PROGRAMS		= books$(EXEEXT)
 books_LDADD		= $(top_builddir)/libxcc.la
-XCC 			= $(top_builddir)/xcc
+XCC 			= $(top_builddir)/xcc$(EXEEXT)
 SCHEMA 			= books.xsd
 BUILT_SOURCES		= books.c
 CLEANFILES		= *~
