@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-builtin(include, version.m4)
+m4_include([version.m4])
 
 AC_INIT([xcc], [XCC_VERSION_MAJOR.XCC_VERSION_MINOR.XCC_VERSION_NANO])
 AC_CANONICAL_SYSTEM

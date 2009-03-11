@@ -1,7 +1,5 @@
 AUTOMAKE_OPTIONS = 1.7
 
-CONFIGURE_DEPENDENCIES		= version.m4
-
 SUBDIRS				= . examples
 
 bin_PROGRAMS			= xcc$(EXEEXT)
