@@ -92,5 +92,5 @@ all-local: $(SCHEMA)
 
 check-local: xcc_t.c xcc.c
 	@echo -n "Testing self-consistency ... "
-	@diff -q xcc_t.c xcc.c
+	@diff -q --strip-trailing-cr xcc_t.c xcc.c
 	@if test $$? -ne 0; then echo "Failed"; else echo "OK"; fi
