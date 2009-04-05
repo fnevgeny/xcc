@@ -1289,7 +1289,7 @@ static void verinfo(void)
 {
     printf("%s\n", xcc_get_version_string());
     puts("Written by Evgeny Stambulchik, with contributions from other people.\n");
-    puts("Copyright (C) 2000-2006 Evgeny Stambulchik.");
+    puts("Copyright (C) 2000-2009 Evgeny Stambulchik.");
     puts("This is free software; see the source for copying conditions.  There is NO");
     puts("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 }
