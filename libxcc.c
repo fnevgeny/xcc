@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2005 Evgeny Stambulchik
+ * Copyright (c) 2000-2009 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -339,6 +339,11 @@ static int xcc_exception_handler(int ierrno,
     }
     
     return handled;
+}
+
+void xcc_abort(XCCParserData *pdata)
+{
+    pdata->error = 1;
 }
 
 int xcc_run(FILE *fp, void **root, void *udata,

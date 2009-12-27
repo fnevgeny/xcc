@@ -1,7 +1,7 @@
 /*
  * XCC - XML Compiler-Compiler
  * 
- * Copyright (c) 2000-2006 Evgeny Stambulchik
+ * Copyright (c) 2000-2009 Evgeny Stambulchik
  * 
  * 
  *                           All Rights Reserved
@@ -38,7 +38,7 @@
 
 #define XCC_VERSION_MAJOR   0
 #define XCC_VERSION_MINOR   6
-#define XCC_VERSION_NANO    2
+#define XCC_VERSION_NANO    3
 
 #define XCC_RETURN_SUCCESS   0
 #define XCC_RETURN_FAILURE   1
@@ -135,6 +135,8 @@ char **xcc_augment_attributes(const char **attr,
 
 void *xcc_get_root(const XCCParserData *pdata);
 int xcc_get_linenum(const XCCParserData *pdata);
+
+void xcc_abort(XCCParserData *pdata);
 
 int xcc_run(FILE *fp, void **root, void *udata,
               XML_StartElementHandler start_element_handler,
