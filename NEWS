@@ -1,3 +1,8 @@
+New with 0.6.3, released 2011-05-02:
+
+    * [ES] Added xcc_abort().
+    
+    
 New with 0.6.2, released 2009-04-05:
 
     * [MO] Build fixes for cygwin and mingw.
