@@ -897,7 +897,7 @@ static int output_end_handler(XCC *xcc)
     dump(xcc, "{\n");
     dump(xcc, "    XCCParserData *pdata = (XCCParserData *) data;\n");
     dump(xcc, "    XCCNode *node, *pnode;\n");
-    dump(xcc, "    void *p;\n");
+    dump(xcc, "    void *p = NULL;\n");
     dump(xcc, "    int element_id, parent_id, parent_child, skip = 0;\n");
     dump(xcc, "    XCCEType element, pelement;\n");
     if (n_data_elements) {
