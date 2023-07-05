@@ -1,6 +1,6 @@
 XCC - XML Compiler-Compiler
 
-Copyright (c) 2000-2006 Evgeny Stambulchik
+Copyright (c) 2000-2023 Evgeny Stambulchik
 
 XCC is a tool for building XML format parsers. One way to describe what XCC
 does is by analogy with a generic parser generator, e.g. yacc or bison. Yacc
@@ -22,4 +22,3 @@ if the recursive nature of it causes you light dizziness (it does for me ;-)),
 you're advised to explore the "examples" dir instead.
 
 To create packages for your OS, check the "packaging" directory.
-
