@@ -1,3 +1,4 @@
+*.o
 bxcc
 b2xcc
 xcc
@@ -22,6 +23,7 @@ config.sub
 depcomp
 install-sh
 missing
+compile
 mkinstalldirs
 ltmain.sh
 config.h
@@ -35,3 +37,7 @@ stamp-h.in
 *.tar.gz
 VERSION
 version.m4
+examples/books
+examples/books.c
+examples/books.xsd
+packaging/fedora/xcc.spec
