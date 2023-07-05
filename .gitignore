@@ -1,4 +1,5 @@
 *.o
+*~
 bxcc
 b2xcc
 xcc
