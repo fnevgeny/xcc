@@ -36,7 +36,7 @@ $(SCHEMA):  xcc.xcc xcc$(EXEEXT)
 	./xcc$(EXEEXT) -i xcc.xcc -s -o $@
 
 ChangeLog: configure.ac NEWS
-	cvs2cl
+	git2cl > $@
 VERSION: configure.ac
 	echo $(VERSION) > $@
 
