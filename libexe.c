@@ -1132,11 +1132,10 @@ int xcc_output_schema(const XCC *xcc)
     for (i = 0; i < n_elements; i++) {
         Element *e;
         void *p;
-        int j, n_children, n_attributes, parent_id;
+        int j, n_children, n_attributes;
         
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
-        parent_id  = e->id;
         
         n_children = xcc_stack_depth(e->children);
         n_attributes = xcc_stack_depth(e->attributes);
@@ -1218,11 +1217,10 @@ int xcc_check_tree(const XCC *xcc)
         void *p;
         Element *e;
         Attribute *a;
-        int j, element_id, n_children, n_attributes;
+        int j, n_children, n_attributes;
         
         xcc_stack_get_data(xcc->elements, i, &p);
         e = p;
-        element_id = e->id;
 
         if (!e->name) {
             xcc_error("Got unnamed element");
