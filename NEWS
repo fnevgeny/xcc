@@ -1,3 +1,8 @@
+New with 1.0.0, released 2023-07-05:
+
+    * [ES] Minor autoconf updates.
+
+
 New with 0.6.3, released 2011-05-02:
 
     * [ES] Added xcc_abort().
