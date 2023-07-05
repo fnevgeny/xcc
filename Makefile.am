@@ -35,9 +35,9 @@ bundle.i: xcc.h libxcc.c
 $(SCHEMA):  xcc.xcc xcc$(EXEEXT)
 	./xcc$(EXEEXT) -i xcc.xcc -s -o $@
 
-ChangeLog: configure.in NEWS
+ChangeLog: configure.ac NEWS
 	cvs2cl
-VERSION: configure.in
+VERSION: configure.ac
 	echo $(VERSION) > $@
 
 include version.mak

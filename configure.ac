@@ -1,9 +1,9 @@
-AC_PREREQ(2.59)
+AC_PREREQ([2.71])
 
 m4_include([version.m4])
 
-AC_INIT([xcc], [XCC_VERSION_MAJOR.XCC_VERSION_MINOR.XCC_VERSION_NANO])
-AC_CANONICAL_SYSTEM
+AC_INIT([xcc],[XCC_VERSION_MAJOR.XCC_VERSION_MINOR.XCC_VERSION_NANO])
+AC_CANONICAL_TARGET
 AC_CONFIG_SRCDIR(libexe.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(1.7)
@@ -14,7 +14,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_DISABLE_SHARED
-AC_PROG_LIBTOOL
+LT_INIT
 
 # add /usr/local/lib and /usr/local/include
 CPPFLAGS="$CPPFLAGS -I/usr/local/include"
@@ -31,16 +31,14 @@ AC_DEFUN([AC_C_ADD_FLAG],
 		for i in $2; do
 		    CFLAGS="$saved_CFLAGS $i"
 		    # gcc-3.0 -ggdb crashes by this:
-		    AC_TRY_COMPILE([#define MAX(a,b) ((a) > (b) ? (a) : (b))
+		    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define max(a, b)							\
 	({								\
 		typeof(a)	_a = (a);				\
 		typeof(b)	_b = (b);				\
 		MAX(_a, _b);						\
-	})],
-			[max(42, 63)],
-			[ac_cv_c_flag_$1="$i"
-			    break])
+	})]], [[max(42, 63)]])],[ac_cv_c_flag_$1="$i"
+			    break],[])
 		done
 		CFLAGS="$saved_CFLAGS"])
 	if test "x$ac_cv_c_flag_$1" != "xno"; then
@@ -66,9 +64,10 @@ AC_SUBST(MAINTAINERCLEANFILES)
 AC_DEFINE_UNQUOTED(XCC_VERSION_STRING, "$PACKAGE_NAME-$PACKAGE_VERSION", [package version])
 
 AC_SUBST(VERSION)
-AC_OUTPUT(Makefile							\
+AC_CONFIG_FILES([Makefile							\
 	  examples/Makefile						\
-	  packaging/fedora/xcc.spec)
+	  packaging/fedora/xcc.spec])
+AC_OUTPUT
 
 echo
 echo
